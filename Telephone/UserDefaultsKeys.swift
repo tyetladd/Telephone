@@ -40,6 +40,7 @@ class UserDefaultsKeys: NSObject {
     static let keepCallWindowOnTop = "KeepCallWindowOnTop"
     static let callWaiting = "CallWaiting"
     static let useG711Only = "UseG711Only"
+    static let enabledCodecs = "EnabledCodecs"
     static let lockCodec = "LockCodec"
     static let settingsVersion = "SettingsVersion"
 

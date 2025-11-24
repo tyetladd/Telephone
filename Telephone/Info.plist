@@ -6,6 +6,8 @@
 	<string>English</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Spicy Edition by Nelson Camargo — Othos Telecom. Based on Telephone by 64 Characters.</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -52,7 +54,7 @@
 	<key>NSContactsUsageDescription</key>
 	<string>Details from your contacts can be used for displaying names and phone labels and for phone number autocomplete.</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2016–2022 64 Characters</string>
+	<string>Spicy Edition by Nelson Camargo — Othos Telecom. Based on Telephone by 64 Characters.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSMicrophoneUsageDescription</key>

@@ -139,7 +139,10 @@ extern const NSInteger kAKSIPUserAgentInvalidIdentifier;
 
 
 /// A Boolean value indicating if only G.711 codec is used.
-@property(nonatomic, assign) BOOL usesG711Only;
+
+
+/// Ordered list of codec identifiers to advertise. Empty array means defaults.
+@property(nonatomic, copy) NSArray<NSString *> *enabledCodecs;
 
 /// A Boolean value indicating if a codec should be locked.
 ///
@@ -154,6 +157,9 @@ extern const NSInteger kAKSIPUserAgentInvalidIdentifier;
 
 // Returns the shared SIP user agent object.
 + (AKSIPUserAgent *)sharedUserAgent;
+
+// Default list of enabled codec identifiers in priority order.
++ (NSArray<NSString *> *)defaultEnabledCodecs;
 
 // Designated initializer. Initializes a SIP user agent and sets its delegate.
 - (instancetype)initWithDelegate:(id<AKSIPUserAgentDelegate>)aDelegate;

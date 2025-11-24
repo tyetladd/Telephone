@@ -25,6 +25,7 @@
 #import "AKSIPCall.h"
 #import "AKSIPURIParser.h"
 #import "PJSUACallbacks.h"
+#import "PJSIPLogBuffer.h"
 
 #import "Telephone-Swift.h"
 
@@ -53,8 +54,23 @@ static const BOOL kAKSIPUserAgentDefaultDetectsVoiceActivity = YES;
 static const BOOL kAKSIPUserAgentDefaultUsesICE = NO;
 static const BOOL kAKSIPUserAgentDefaultUsesQoS = YES;
 static const NSInteger kAKSIPUserAgentDefaultTransportPort = 0;
-static const BOOL kAKSIPUserAgentDefaultUsesG711Only = NO;
+
 static const BOOL kAKSIPUserAgentDefaultLocksCodec = YES;
+
+static NSArray<NSString *> *AKDefaultEnabledCodecs(void) {
+    static NSArray<NSString *> *defaultCodecs = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        defaultCodecs = @[
+            @"opus/48000/2",
+            @"G722/16000/1",
+            @"G729/8000/1",
+            @"PCMA/8000/1",
+            @"PCMU/8000/1"
+        ];
+    });
+    return defaultCodecs;
+}
 
 
 @interface AKSIPUserAgent ()
@@ -85,11 +101,8 @@ static const BOOL kAKSIPUserAgentDefaultLocksCodec = YES;
 
 @property(nonatomic, readonly) NSThread *thread;
 
-/// Updates codecs according to usesG711Only property value.
+/// Updates codecs according to current preferences.
 - (void)updateCodecs;
-
-/// Returns default priority for codec with specified identifier.
-- (NSUInteger)priorityForCodec:(NSString *)identifier;
 
 @end
 
@@ -201,11 +214,14 @@ static const BOOL kAKSIPUserAgentDefaultLocksCodec = YES;
     }
 }
 
-- (void)setUsesG711Only:(BOOL)usesG711Only {
-    if (_usesG711Only != usesG711Only) {
-        _usesG711Only = usesG711Only;
-        [self updateCodecs];
+
+
+- (void)setEnabledCodecs:(NSArray<NSString *> *)enabledCodecs {
+    if ([_enabledCodecs isEqualToArray:enabledCodecs]) {
+        return;
     }
+    _enabledCodecs = [enabledCodecs copy];
+    [self updateCodecs];
 }
 
 
@@ -219,6 +235,10 @@ static const BOOL kAKSIPUserAgentDefaultLocksCodec = YES;
     });
     
     return __sharedUserAgent;
+}
+
++ (NSArray<NSString *> *)defaultEnabledCodecs {
+    return AKDefaultEnabledCodecs();
 }
 
 
@@ -242,7 +262,8 @@ static const BOOL kAKSIPUserAgentDefaultLocksCodec = YES;
     [self setUsesICE:kAKSIPUserAgentDefaultUsesICE];
     [self setUsesQoS:kAKSIPUserAgentDefaultUsesQoS];
     [self setTransportPort:kAKSIPUserAgentDefaultTransportPort];
-    [self setUsesG711Only:kAKSIPUserAgentDefaultUsesG711Only];
+
+    _enabledCodecs = [AKDefaultEnabledCodecs() copy];
     [self setLocksCodec:kAKSIPUserAgentDefaultLocksCodec];
     
     [self setRingbackSlot:PJSUA_INVALID_ID];
@@ -367,8 +388,12 @@ static const BOOL kAKSIPUserAgentDefaultLocksCodec = YES;
         loggingConfig.log_filename = [[[self logFileName] stringByExpandingTildeInPath] pjString];
     }
 
-    loggingConfig.level = (unsigned)[self logLevel];
-    loggingConfig.console_level = (unsigned)[self consoleLogLevel];
+    unsigned logLevel = (unsigned)[self logLevel];
+    unsigned consoleLevel = (unsigned)[self consoleLogLevel];
+    AKPJSIPLogBufferSetConsoleOutputLevel((int)consoleLevel);
+    loggingConfig.level = logLevel;
+    loggingConfig.console_level = MAX(consoleLevel, logLevel);
+    loggingConfig.cb = &AKPJSIPLogCallback;
     mediaConfig.no_vad = ![self detectsVoiceActivity];
     mediaConfig.enable_ice = [self usesICE];
     mediaConfig.snd_auto_close_time = 1;
@@ -802,6 +827,14 @@ static const BOOL kAKSIPUserAgentDefaultLocksCodec = YES;
     if (self.state == AKSIPUserAgentStateStopped || self.state == AKSIPUserAgentStateStopping) {
         return;
     }
+
+    NSArray<NSString *> *enabledCodecs = [self resolvedEnabledCodecs];
+    if (enabledCodecs.count == 0) {
+        NSLog(@"Skipping codec update because no usable codecs were found.");
+        return;
+    }
+    NSDictionary<NSString *, NSNumber *> *priorities = [self prioritiesForEnabledCodecs:enabledCodecs];
+
     const unsigned kCodecInfoSize = 64;
     pjsua_codec_info codecInfo[kCodecInfoSize];
     unsigned codecCount = kCodecInfoSize;
@@ -809,48 +842,80 @@ static const BOOL kAKSIPUserAgentDefaultLocksCodec = YES;
     if (status != PJ_SUCCESS) {
         NSLog(@"Error getting list of codecs");
     } else {
-        static NSString * const kPCMU = @"PCMU/8000/1";
-        static NSString * const kPCMA = @"PCMA/8000/1";
         for (NSUInteger i = 0; i < codecCount; i++) {
             NSString *codecIdentifier = [NSString stringWithPJString:codecInfo[i].codec_id];
-            pj_uint8_t defaultPriority = (pj_uint8_t)[self priorityForCodec:codecIdentifier];
-            if (self.usesG711Only) {
-                pj_uint8_t priority = 0;
-                if ([codecIdentifier isEqualToString:kPCMU] || [codecIdentifier isEqualToString:kPCMA]) {
-                    priority = defaultPriority;
-                }
-                status = pjsua_codec_set_priority(&codecInfo[i].codec_id, priority);
-                if (status != PJ_SUCCESS) {
-                    NSLog(@"Error setting codec priority to zero");
-                }
-            } else {
-                status = pjsua_codec_set_priority(&codecInfo[i].codec_id, defaultPriority);
-                if (status != PJ_SUCCESS) {
-                    NSLog(@"Error setting codec priority to the default value");
-                }
+            pj_uint8_t priority = 0;
+            NSNumber *preferredPriority = priorities[codecIdentifier];
+            if (preferredPriority != nil) {
+                priority = preferredPriority.unsignedCharValue;
+            }
+            status = pjsua_codec_set_priority(&codecInfo[i].codec_id, priority);
+            if (status != PJ_SUCCESS) {
+                NSLog(@"Error applying codec priority for %@", codecIdentifier);
             }
         }
     }
 }
 
-- (NSUInteger)priorityForCodec:(NSString *)identifier {
-    static NSDictionary *priorities = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        priorities = @{
-                       @"opus/48000/2":  @(130),
-                       @"G722/16000/1":  @(129),
-                       @"PCMA/8000/1":   @(128),
-                       @"PCMU/8000/1":   @(127),
-                       @"speex/32000/1": @(0),
-                       @"speex/16000/1": @(0),
-                       @"speex/8000/1":  @(0),
-                       @"iLBC/8000/1":   @(0),
-                       @"GSM/8000/1":    @(0)
-                       };
-    });
-    
-    return [priorities[identifier] unsignedIntegerValue];
+- (NSArray<NSString *> *)resolvedEnabledCodecs {
+
+
+    NSArray<NSString *> *preferred = self.enabledCodecs.count > 0 ? self.enabledCodecs : AKDefaultEnabledCodecs();
+    NSArray<NSString *> *usablePreferred = [self usableCodecsFromPreferred:preferred];
+    if (usablePreferred.count > 0) {
+        return usablePreferred;
+    }
+
+    NSArray<NSString *> *usableDefaults = [self usableCodecsFromPreferred:AKDefaultEnabledCodecs()];
+    if (usableDefaults.count > 0) {
+        NSLog(@"Requested codecs (%@) are unavailable; falling back to defaults %@", preferred, usableDefaults);
+        return usableDefaults;
+    }
+
+    NSLog(@"No usable codecs reported by PJSIP; keeping existing codec configuration to avoid invalid SDP.");
+    return @[];
+}
+
+- (NSDictionary<NSString *, NSNumber *> *)prioritiesForEnabledCodecs:(NSArray<NSString *> *)enabled {
+    NSMutableDictionary<NSString *, NSNumber *> *priorities = [[NSMutableDictionary alloc] initWithCapacity:enabled.count];
+    const NSUInteger base = 200;
+    const NSUInteger step = 5;
+    for (NSUInteger idx = 0; idx < enabled.count; idx++) {
+        NSUInteger calculated = base - idx * step;
+        if (calculated == 0) {
+            calculated = 1;
+        }
+        priorities[enabled[idx]] = @((pj_uint8_t)MIN(calculated, 255));
+    }
+    return priorities;
+}
+
+- (NSArray<NSString *> *)usableCodecsFromPreferred:(NSArray<NSString *> *)preferred {
+    if (preferred.count == 0) {
+        return @[];
+    }
+
+    const unsigned kCodecInfoSize = 64;
+    pjsua_codec_info codecInfo[kCodecInfoSize];
+    unsigned codecCount = kCodecInfoSize;
+    pj_status_t status = pjsua_enum_codecs(codecInfo, &codecCount);
+    if (status != PJ_SUCCESS) {
+        NSLog(@"Error getting list of codecs");
+        return @[];
+    }
+
+    NSMutableSet<NSString *> *available = [[NSMutableSet alloc] initWithCapacity:codecCount];
+    for (NSUInteger i = 0; i < codecCount; i++) {
+        [available addObject:[NSString stringWithPJString:codecInfo[i].codec_id]];
+    }
+
+    NSMutableArray<NSString *> *usable = [[NSMutableArray alloc] initWithCapacity:preferred.count];
+    for (NSString *codecIdentifier in preferred) {
+        if ([available containsObject:codecIdentifier]) {
+            [usable addObject:codecIdentifier];
+        }
+    }
+    return usable;
 }
 
 - (NSString *)stringForSIPResponseCode:(NSInteger)responseCode {

@@ -10,6 +10,7 @@
             <connections>
                 <outlet property="accountsToolbarItem" destination="142" id="183"/>
                 <outlet property="generalToolbarItem" destination="141" id="182"/>
+                <outlet property="codecsToolbarItem" destination="C0D" id="yiN-ax-fsO"/>
                 <outlet property="networkToolbarItem" destination="259" id="264"/>
                 <outlet property="soundToolbarItem" destination="250" id="253"/>
                 <outlet property="toolbar" destination="133" id="143"/>
@@ -47,6 +48,12 @@
                             <action selector="changeView:" target="-2" id="252"/>
                         </connections>
                     </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="7404C136-8B6B-423E-9E52-8666E1E68CDF" label="Codecs" paletteLabel="Codecs" tag="-1" sizingBehavior="auto" id="C0D">
+                        <nil key="toolTip"/>
+                        <connections>
+                            <action selector="changeView:" target="-2" id="qyp-Q6-815"/>
+                        </connections>
+                    </toolbarItem>
                     <toolbarItem implicitItemIdentifier="D23028AB-A7C7-4A3C-A8BE-FDE39A10AB8E" label="Network" paletteLabel="Network" tag="-1" sizingBehavior="auto" id="259">
                         <nil key="toolTip"/>
                         <connections>
@@ -58,6 +65,7 @@
                     <toolbarItem reference="141"/>
                     <toolbarItem reference="142"/>
                     <toolbarItem reference="250"/>
+                    <toolbarItem reference="C0D"/>
                     <toolbarItem reference="259"/>
                 </defaultToolbarItems>
                 <connections>

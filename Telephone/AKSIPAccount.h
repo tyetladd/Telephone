@@ -97,6 +97,12 @@ extern const NSInteger kAKSIPAccountRegistrationExpireTimeNotSpecified;
 /// When YES, and when STUN and ICE are disabled, then the IP address found in registration response will be used.
 @property(nonatomic, readonly) BOOL updatesSDP;
 
+/// A Boolean value indicating if expert/debug features are enabled for this account.
+@property(nonatomic, readonly, getter=isExpertModeEnabled) BOOL expertModeEnabled;
+
+/// Custom headers that should be applied to outgoing INVITE requests when expert mode is enabled.
+@property(nonatomic, readonly, copy) NSArray<NSDictionary *> *customInviteHeaders;
+
 // The receiver's identifier at the user agent.
 @property(nonatomic, readonly) NSInteger identifier;
 

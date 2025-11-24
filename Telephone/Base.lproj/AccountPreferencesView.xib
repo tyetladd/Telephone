@@ -26,6 +26,10 @@
                 <outlet property="proxyHostField" destination="1UL-lr-59v" id="C3Z-2s-cyu"/>
                 <outlet property="proxyPortField" destination="dli-GZ-E5f" id="h4M-Yj-Kth"/>
                 <outlet property="registrarField" destination="97" id="513"/>
+                <outlet property="addInviteHeaderButton" destination="mPb-0n-8xN" id="8Aq-hv-sVN"/>
+                <outlet property="expertModeCheckBox" destination="exM-uT-1sW" id="m0p-Tl-3VR"/>
+                <outlet property="inviteHeadersTable" destination="Jq6-F9-2cV" id="TXB-a1-eB1"/>
+                <outlet property="removeInviteHeaderButton" destination="rT0-9e-x5q" id="mB3-wZ-Uz2"/>
                 <outlet property="reregistrationTimeField" destination="499" id="516"/>
                 <outlet property="substitutePlusCharacterCheckBox" destination="416" id="422"/>
                 <outlet property="updateIPAddressCheckBox" destination="4L8-E6-lKd" id="Dwd-Uy-GTR"/>
@@ -576,6 +580,127 @@
                                             <outlet property="nextKeyView" destination="96" id="Uib-Sv-2j8"/>
                                         </connections>
                                     </textField>
+                                    <button translatesAutoresizingMaskIntoConstraints="NO" id="exM-uT-1sW" userLabel="Expert Mode">
+                                        <rect key="frame" x="145" y="128" width="127" height="16"/>
+                                        <buttonCell key="cell" type="check" title="Enable Expert Mode" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="PkG-7f-2lJ">
+                                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                            <font key="font" metaFont="menu" size="11"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="toggleExpertMode:" target="-2" id="KMV-oS-oSK"/>
+                                        </connections>
+                                    </button>
+                                    <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fJH-fo-2Rq">
+                                        <rect key="frame" x="32" y="104" width="114" height="14"/>
+                                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Custom INVITE headers:" id="9rQ-xd-hyo">
+                                            <font key="font" metaFont="menu" size="11"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <scrollView autohidesScrollers="YES" horizontalLineScroll="16" horizontalPageScroll="10" verticalLineScroll="16" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="c5k-qt-MNm">
+                                        <rect key="frame" x="146" y="60" width="200" height="80"/>
+                                        <clipView key="contentView" id="eHq-8q-2J8">
+                                            <rect key="frame" x="1" y="1" width="198" height="78"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <subviews>
+                                                <tableView verticalHuggingPriority="750" columnAutoresizingStyle="none" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" rowHeight="18" rowSizeStyle="small" headerView="ubS-1v-PXJ" id="Jq6-F9-2cV">
+                                                    <rect key="frame" x="0.0" y="0.0" width="198" height="55"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <size key="intercellSpacing" width="3" height="2"/>
+                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                    <tableColumns>
+                                                        <tableColumn identifier="HeaderName" width="90" minWidth="80" maxWidth="400" id="hXJ-O8-3iy">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Header">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" white="0.33333299" alpha="1" colorSpace="calibratedWhite"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" controlSize="small" lineBreakMode="truncatingTail" editable="YES" selectable="YES" alignment="left" title="Header" id="9lf-gM-QXi">
+                                                                <font key="font" metaFont="menu" size="11"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                        </tableColumn>
+                                                        <tableColumn identifier="HeaderValue" width="90" minWidth="60" maxWidth="600" id="J4B-l8-8P4">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Value">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" white="0.33333299" alpha="1" colorSpace="calibratedWhite"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" controlSize="small" lineBreakMode="truncatingTail" editable="YES" selectable="YES" alignment="left" title="Value" id="Z9D-1M-SyY">
+                                                                <font key="font" metaFont="menu" size="11"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                        </tableColumn>
+                                                        <tableColumn identifier="HeaderOverwrite" width="40" minWidth="36" maxWidth="120" id="UP5-66-F4e">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Overwrite">
+                                                                <font key="font" metaFont="smallSystem"/>
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" white="0.33333299" alpha="1" colorSpace="calibratedWhite"/>
+                                                            </tableHeaderCell>
+                                                            <buttonCell key="dataCell" type="check" title="" bezelStyle="regularSquare" imagePosition="only" controlSize="small" inset="2" id="D9T-kf-7Uw">
+                                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                <font key="font" metaFont="menu" size="11"/>
+                                                            </buttonCell>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                        </tableColumn>
+                                                    </tableColumns>
+                                                    <connections>
+                                                        <outlet property="dataSource" destination="-2" id="1rB-fg-XBw"/>
+                                                        <outlet property="delegate" destination="-2" id="MXp-3U-J4V"/>
+                                                    </connections>
+                                                </tableView>
+                                            </subviews>
+                                        </clipView>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="80" id="4he-hH-PIc"/>
+                                        </constraints>
+                                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="QKs-sP-4Np">
+                                            <rect key="frame" x="-100" y="-100" width="198" height="16"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                        <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="Mqw-Sj-hz0">
+                                            <rect key="frame" x="-15" y="17" width="16" height="80"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                        <tableHeaderView key="headerView" id="ubS-1v-PXJ">
+                                            <rect key="frame" x="0.0" y="0.0" width="198" height="17"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </tableHeaderView>
+                                    </scrollView>
+                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="mPb-0n-8xN" userLabel="Add Header">
+                                        <rect key="frame" x="146" y="30" width="33" height="23"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="21" id="nwo-y5-gaz"/>
+                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="33" id="6Aq-fM-SwG"/>
+                                        </constraints>
+                                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="MtF-D4-gOX">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="addInviteHeader:" target="-2" id="vVQ-15-vpO"/>
+                                        </connections>
+                                    </button>
+                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="rT0-9e-x5q" userLabel="Remove Header">
+                                        <rect key="frame" x="178" y="30" width="33" height="23"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="21" id="rZR-Iv-FQ8"/>
+                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="33" id="yUO-Or-fsB"/>
+                                        </constraints>
+                                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="YfS-Dp-MsJ">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="removeInviteHeader:" target="-2" id="ss0-dm-5up"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="100" firstAttribute="firstBaseline" secondItem="96" secondAttribute="firstBaseline" id="05d-gK-lgS"/>
@@ -590,21 +715,37 @@
                                     <constraint firstItem="100" firstAttribute="trailing" secondItem="101" secondAttribute="trailing" id="I0z-8G-6f0"/>
                                     <constraint firstItem="497" firstAttribute="firstBaseline" secondItem="499" secondAttribute="firstBaseline" id="J73-ry-Wam"/>
                                     <constraint firstItem="497" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="412" secondAttribute="leading" constant="20" symbolic="YES" id="NVO-ft-eEw"/>
+                                    <constraint firstItem="c5k-qt-MNm" firstAttribute="top" secondItem="fJH-fo-2Rq" secondAttribute="bottom" constant="6" id="NYj-mb-NAt"/>
                                     <constraint firstAttribute="trailing" secondItem="96" secondAttribute="trailing" priority="750" constant="32" id="O2G-bd-Wab"/>
                                     <constraint firstItem="499" firstAttribute="top" secondItem="97" secondAttribute="bottom" constant="8" symbolic="YES" id="R2l-cv-Gfq"/>
                                     <constraint firstItem="101" firstAttribute="firstBaseline" secondItem="97" secondAttribute="firstBaseline" id="ZEV-Of-3eP"/>
                                     <constraint firstItem="499" firstAttribute="leading" secondItem="97" secondAttribute="leading" id="ZYr-Xd-9UC"/>
                                     <constraint firstItem="416" firstAttribute="top" secondItem="499" secondAttribute="bottom" constant="23" id="ay3-Mk-g3H"/>
                                     <constraint firstItem="497" firstAttribute="firstBaseline" secondItem="501" secondAttribute="firstBaseline" id="b95-3g-uOj"/>
+                                    <constraint firstItem="fJH-fo-2Rq" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="412" secondAttribute="leading" constant="20" symbolic="YES" id="cWh-Y7-dXa"/>
+                                    <constraint firstItem="mPb-0n-8xN" firstAttribute="leading" secondItem="c5k-qt-MNm" secondAttribute="leading" id="dWM-dq-hbF"/>
                                     <constraint firstItem="416" firstAttribute="leading" secondItem="499" secondAttribute="leading" id="d3Q-be-EE4"/>
                                     <constraint firstItem="418" firstAttribute="firstBaseline" secondItem="416" secondAttribute="firstBaseline" id="e1f-0e-Vv3"/>
                                     <constraint firstItem="97" firstAttribute="top" secondItem="96" secondAttribute="bottom" constant="20" id="fMx-i2-RyU"/>
                                     <constraint firstItem="501" firstAttribute="leading" secondItem="499" secondAttribute="trailing" constant="3" id="hGQ-If-5fh"/>
                                     <constraint firstItem="497" firstAttribute="trailing" secondItem="101" secondAttribute="trailing" id="jxb-Uc-Iro"/>
+                                    <constraint firstAttribute="trailing" secondItem="c5k-qt-MNm" secondAttribute="trailing" constant="20" symbolic="YES" id="k4Z-Ts-ljR"/>
+                                    <constraint firstItem="c5k-qt-MNm" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="rT0-9e-x5q" secondAttribute="trailing" id="mlo-RP-59l"/>
+                                    <constraint firstItem="exM-uT-1sW" firstAttribute="leading" secondItem="499" secondAttribute="leading" id="oQM-ME-2YZ"/>
+                                    <constraint firstItem="rT0-9e-x5q" firstAttribute="leading" secondItem="mPb-0n-8xN" secondAttribute="trailing" constant="-1" id="p2Y-pZ-zpO"/>
+                                    <constraint firstItem="fJH-fo-2Rq" firstAttribute="top" secondItem="exM-uT-1sW" secondAttribute="bottom" constant="12" id="s4n-Q8-6uG"/>
+                                    <constraint firstItem="rT0-9e-x5q" firstAttribute="centerY" secondItem="mPb-0n-8xN" secondAttribute="centerY" id="uP2-9Y-KHw"/>
+                                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="mPb-0n-8xN" secondAttribute="bottom" constant="12" id="uTZ-AV-Av9"/>
                                     <constraint firstItem="96" firstAttribute="leading" secondItem="100" secondAttribute="trailing" constant="7" id="rSf-f6-dqc"/>
                                     <constraint firstAttribute="trailing" secondItem="499" secondAttribute="trailing" priority="750" constant="181" id="tqf-nn-Uio"/>
                                     <constraint firstItem="96" firstAttribute="trailing" secondItem="97" secondAttribute="trailing" id="v32-ho-csZ"/>
+                                    <constraint firstItem="exM-uT-1sW" firstAttribute="top" secondItem="418" secondAttribute="bottom" constant="20" id="vPt-gn-8ic"/>
+                                    <constraint firstItem="c5k-qt-MNm" firstAttribute="leading" secondItem="412" secondAttribute="leading" constant="20" symbolic="YES" id="vrq-5o-bvx"/>
+                                    <constraint firstItem="mPb-0n-8xN" firstAttribute="top" secondItem="c5k-qt-MNm" secondAttribute="bottom" constant="6" id="wXu-np-rwW"/>
+                                    <constraint firstItem="c5k-qt-MNm" firstAttribute="trailing" secondItem="412" secondAttribute="trailing" constant="20" symbolic="YES" id="x5B-cc-aFX"/>
                                     <constraint firstItem="101" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="412" secondAttribute="leading" constant="20" symbolic="YES" id="zox-FM-NJq"/>
+                                    <constraint firstItem="rT0-9e-x5q" firstAttribute="width" secondItem="mPb-0n-8xN" secondAttribute="width" id="zUd-hV-9VQ"/>
+                                    <constraint firstItem="rT0-9e-x5q" firstAttribute="height" secondItem="mPb-0n-8xN" secondAttribute="height" id="ztW-2U-2Ic"/>
                                 </constraints>
                             </view>
                         </tabViewItem>

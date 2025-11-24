@@ -33,14 +33,43 @@ const NSInteger kAKSIPAccountDefaultReregistrationTime = 300;
 const Transport kAKSIPAccountDefaultTransport = TransportUDP;
 const NSInteger kAKSIPAccountRegistrationExpireTimeNotSpecified = PJSIP_EXPIRES_NOT_SPECIFIED;
 
+static NSArray<NSDictionary *> *AKNormalizeInviteHeaders(NSArray *raw) {
+    if (![raw isKindOfClass:[NSArray class]]) {
+        return @[];
+    }
+
+    NSMutableArray<NSDictionary *> *result = [NSMutableArray arrayWithCapacity:[raw count]];
+
+    for (id item in raw) {
+        if (![item isKindOfClass:[NSDictionary class]]) {
+            continue;
+        }
+
+        NSDictionary *header = (NSDictionary *)item;
+        NSString *name = header[AKSIPAccountKeys.customHeaderName] ?: @"";
+        NSString *value = header[AKSIPAccountKeys.customHeaderValue] ?: @"";
+        BOOL overwrite = [header[AKSIPAccountKeys.customHeaderOverwrite] boolValue];
+
+        [result addObject:@{AKSIPAccountKeys.customHeaderName: name,
+                            AKSIPAccountKeys.customHeaderValue: value,
+                            AKSIPAccountKeys.customHeaderOverwrite: @(overwrite)}];
+    }
+
+    return result;
+}
+
 @interface AKSIPCallParameters : NSObject
 
 @property(nonatomic, readonly) URI *destination;
 @property(nonatomic, readonly) pjsua_acc_id account;
+@property(nonatomic, readonly) BOOL expertModeEnabled;
+@property(nonatomic, readonly, copy) NSArray<NSDictionary *> *inviteHeaders;
 @property(nonatomic, readonly) void (^ _Nonnull completion)(BOOL, PJSUACallInfo *);
 
 - (instancetype)initWithDestination:(URI *)destination
                             account:(pjsua_acc_id)account
+                  expertModeEnabled:(BOOL)expertModeEnabled
+                      inviteHeaders:(NSArray<NSDictionary *> *)inviteHeaders
                          completion:(void (^ _Nonnull)(BOOL, PJSUACallInfo *))completion;
 
 @end
@@ -51,6 +80,8 @@ const NSInteger kAKSIPAccountRegistrationExpireTimeNotSpecified = PJSIP_EXPIRES_
 
 @property(nonatomic, copy) NSString *username;
 @property(nonatomic) NSInteger identifier;
+@property(nonatomic, copy) NSArray<NSDictionary *> *customInviteHeaders;
+@property(nonatomic) BOOL expertModeEnabled;
 
 @property(nonatomic, readonly) NSMutableArray *calls;
 @property(nonatomic, readonly) AKSIPURIParser *parser;
@@ -273,6 +304,8 @@ NS_ASSUME_NONNULL_END
     _updatesContactHeader = [dict[AKSIPAccountKeys.updateContactHeader] boolValue];
     _updatesViaHeader = [dict[AKSIPAccountKeys.updateViaHeader] boolValue];
     _updatesSDP = [dict[AKSIPAccountKeys.updateSDP] boolValue];
+    _expertModeEnabled = [dict[AKSIPAccountKeys.expertModeEnabled] boolValue];
+    _customInviteHeaders = AKNormalizeInviteHeaders(dict[AKSIPAccountKeys.customInviteHeaders]);
 
     _identifier = kAKSIPUserAgentInvalidIdentifier;
     
@@ -310,6 +343,8 @@ NS_ASSUME_NONNULL_END
     };
     AKSIPCallParameters *parameters = [[AKSIPCallParameters alloc] initWithDestination:uri
                                                                                account:(pjsua_acc_id)self.identifier
+                                                                    expertModeEnabled:self.expertModeEnabled
+                                                                        inviteHeaders:self.customInviteHeaders
                                                                             completion:onCallMakeCompletion];
     assert(self.thread);
     [self performSelector:@selector(thread_makeCallWithParameters:) onThread:self.thread withObject:parameters waitUntilDone:NO];
@@ -318,7 +353,26 @@ NS_ASSUME_NONNULL_END
 - (void)thread_makeCallWithParameters:(AKSIPCallParameters *)parameters {
     pj_str_t uri = parameters.destination.stringValue.pjString;
     pjsua_call_id callID = PJSUA_INVALID_ID;
-    BOOL success = pjsua_call_make_call(parameters.account, &uri, 0, NULL, NULL, &callID) == PJ_SUCCESS;
+
+    pjsua_msg_data messageData;
+    pjsua_msg_data *messageDataPtr = NULL;
+    pj_pool_t *pool = NULL;
+
+    if (parameters.expertModeEnabled && [parameters.inviteHeaders count] > 0) {
+        pool = pjsua_pool_create("invite-headers", 512, 512);
+        if (pool != NULL) {
+            pjsua_msg_data_init(&messageData);
+            [self appendHeaders:parameters.inviteHeaders toMessageData:&messageData usingPool:pool];
+            if (!pj_list_empty(&messageData.hdr_list)) {
+                messageDataPtr = &messageData;
+            } else {
+                pj_pool_release(pool);
+                pool = NULL;
+            }
+        }
+    }
+
+    BOOL success = pjsua_call_make_call(parameters.account, &uri, 0, NULL, messageDataPtr, &callID) == PJ_SUCCESS;
     PJSUACallInfo *infoWrapper = nil;
     if (success) {
         pjsua_call_info info;
@@ -327,9 +381,46 @@ NS_ASSUME_NONNULL_END
             infoWrapper = [[PJSUACallInfo alloc] initWithInfo:info parser:self.parser];
         }
     }
+
+    if (pool != NULL) {
+        pj_pool_release(pool);
+    }
+
     dispatch_async(dispatch_get_main_queue(), ^{
         parameters.completion(success, infoWrapper);
     });
+}
+
+- (void)appendHeaders:(NSArray<NSDictionary *> *)headers
+        toMessageData:(pjsua_msg_data *)messageData
+            usingPool:(pj_pool_t *)pool {
+    for (NSDictionary *header in headers) {
+        NSString *name = header[AKSIPAccountKeys.customHeaderName] ?: @"";
+        if ([name length] == 0) {
+            continue;
+        }
+
+        NSString *value = header[AKSIPAccountKeys.customHeaderValue] ?: @"";
+        BOOL overwrite = [header[AKSIPAccountKeys.customHeaderOverwrite] boolValue];
+
+        pj_str_t headerName = [name pjString];
+        if (overwrite) {
+            for (pjsip_hdr *existing = messageData->hdr_list.next; existing != &messageData->hdr_list; ) {
+                pjsip_hdr *next = existing->next;
+                pjsip_generic_string_hdr *stringHeader = (pjsip_generic_string_hdr *)existing;
+                if (pj_stricmp(&stringHeader->name, &headerName) == 0) {
+                    pj_list_erase(existing);
+                }
+                existing = next;
+            }
+        }
+
+        pj_str_t headerValue = [value pjString];
+        pjsip_generic_string_hdr *customHeader = pjsip_generic_string_hdr_create(pool, &headerName, &headerValue);
+        if (customHeader != NULL) {
+            pj_list_push_back(&messageData->hdr_list, (pjsip_hdr *)customHeader);
+        }
+    }
 }
 
 - (AKSIPCall *)addCallWithInfo:(PJSUACallInfo *)info {
@@ -374,10 +465,14 @@ NS_ASSUME_NONNULL_END
 
 - (instancetype)initWithDestination:(URI *)destination
                             account:(pjsua_acc_id)account
-                         completion:(void (^ _Nonnull)(BOOL, PJSUACallInfo *))completion {
+                  expertModeEnabled:(BOOL)expertModeEnabled
+                      inviteHeaders:(NSArray<NSDictionary *> *)inviteHeaders
+                          completion:(void (^ _Nonnull)(BOOL, PJSUACallInfo *))completion {
     if ((self = [super init])) {
         _destination = destination;
         _account = account;
+        _expertModeEnabled = expertModeEnabled;
+        _inviteHeaders = [inviteHeaders copy];
         _completion = completion;
     }
     return self;

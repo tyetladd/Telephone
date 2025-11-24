@@ -43,4 +43,10 @@ class AKSIPAccountKeys: NSObject {
     static let updateViaHeader = "UpdateViaHeader"
     static let updateSDP = "UpdateSDP"
     static let useIPv6Only = "UseIPv6Only"
+
+    static let expertModeEnabled = "ExpertModeEnabled"
+    static let customInviteHeaders = "CustomInviteHeaders"
+    static let customHeaderName = "HeaderName"
+    static let customHeaderValue = "HeaderValue"
+    static let customHeaderOverwrite = "HeaderOverwrite"
 }

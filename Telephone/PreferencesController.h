@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class AKSIPUserAgent;
 @class GeneralPreferencesViewController, AccountPreferencesViewController;
-@class SoundPreferencesViewController, NetworkPreferencesViewController;
+@class SoundPreferencesViewController, NetworkPreferencesViewController, CodecPreferencesViewController;
 
 // A preferences controller.
 @interface PreferencesController : NSWindowController <SoundIOPreferences>
@@ -46,6 +46,9 @@ NS_ASSUME_NONNULL_BEGIN
 // Sound preferences view controller.
 @property(nonatomic, readonly) SoundPreferencesViewController *soundPreferencesViewController;
 
+// Codec preferences view controller.
+@property(nonatomic, readonly) CodecPreferencesViewController *codecPreferencesViewController;
+
 // Network preferences view controller.
 @property(nonatomic, readonly) NetworkPreferencesViewController *networkPreferencesViewController;
 
@@ -55,6 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, weak) IBOutlet NSToolbarItem *generalToolbarItem;
 @property(nonatomic, weak) IBOutlet NSToolbarItem *accountsToolbarItem;
 @property(nonatomic, weak) IBOutlet NSToolbarItem *soundToolbarItem;
+@property(nonatomic, weak) IBOutlet NSToolbarItem *codecsToolbarItem;
 @property(nonatomic, weak) IBOutlet NSToolbarItem *networkToolbarItem;
 
 - (instancetype)initWithDelegate:(id<PreferencesControllerDelegate>)delegate

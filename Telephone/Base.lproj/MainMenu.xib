@@ -23,12 +23,6 @@
                                     <action selector="orderFrontStandardAboutPanel:" target="-2" id="142"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Telephone Pro…" id="rMu-ch-wsu">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="showStoreWindow:" target="450" id="UXk-hd-Ptc"/>
-                                </connections>
-                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="236">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
@@ -210,6 +204,12 @@ DQ
                             <menuItem title="Zoom" id="239">
                                 <connections>
                                     <action selector="performZoom:" target="-1" id="240"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Debug Console" id="fFY-Lc-DBG">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="showDebugConsole:" target="450" id="U0y-YT-j1y"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="92">

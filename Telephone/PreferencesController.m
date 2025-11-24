@@ -23,6 +23,7 @@
 #import "AccountPreferencesViewController.h"
 #import "GeneralPreferencesViewController.h"
 #import "NetworkPreferencesViewController.h"
+#import "CodecPreferencesViewController.h"
 #import "SoundPreferencesViewController.h"
 
 @implementation PreferencesController
@@ -30,6 +31,7 @@
 @synthesize generalPreferencesViewController = _generalPreferencesViewController;
 @synthesize accountPreferencesViewController = _accountPreferencesViewController;
 @synthesize soundPreferencesViewController = _soundPreferencesViewController;
+@synthesize codecPreferencesViewController = _codecPreferencesViewController;
 @synthesize networkPreferencesViewController = _networkPreferencesViewController;
 
 - (void)setDelegate:(id)aDelegate {
@@ -99,6 +101,13 @@
     return _soundPreferencesViewController;
 }
 
+- (CodecPreferencesViewController *)codecPreferencesViewController {
+    if (_codecPreferencesViewController == nil) {
+        _codecPreferencesViewController = [[CodecPreferencesViewController alloc] initWithUserAgent:self.userAgent];
+    }
+    return _codecPreferencesViewController;
+}
+
 - (NetworkPreferencesViewController *)networkPreferencesViewController {
     if (_networkPreferencesViewController == nil) {
         _networkPreferencesViewController
@@ -131,6 +140,7 @@
     self.generalToolbarItem.image = [NSImage imageWithSystemSymbolName:@"gearshape" accessibilityDescription:nil];
     self.accountsToolbarItem.image = [NSImage imageWithSystemSymbolName:@"at" accessibilityDescription:nil];
     self.soundToolbarItem.image = [NSImage imageWithSystemSymbolName:@"speaker.wave.2" accessibilityDescription:nil];
+    self.codecsToolbarItem.image = [NSImage imageWithSystemSymbolName:@"slider.horizontal.3" accessibilityDescription:nil];
     self.networkToolbarItem.image = [NSImage imageWithSystemSymbolName:@"network" accessibilityDescription:nil];
 }
 
@@ -163,6 +173,10 @@
     } else if ([sender isEqual:self.soundToolbarItem]) {
         controller = self.soundPreferencesViewController;
         title = self.soundPreferencesViewController.title;
+        firstResponder = nil;
+    } else if ([sender isEqual:self.codecsToolbarItem]) {
+        controller = self.codecPreferencesViewController;
+        title = self.codecPreferencesViewController.title;
         firstResponder = nil;
     } else if ([sender isEqual:self.networkToolbarItem]) {
         controller = self.networkPreferencesViewController;
@@ -216,6 +230,7 @@
     return @[[[self generalToolbarItem] itemIdentifier],
             [[self accountsToolbarItem] itemIdentifier],
             [[self soundToolbarItem] itemIdentifier],
+            [[self codecsToolbarItem] itemIdentifier],
             [[self networkToolbarItem] itemIdentifier]];
 }
 

@@ -22,7 +22,7 @@ import UseCases
 final class TruncatingCallHistoryFactory {
     private let limit: Int
 
-    init(limit: Int) {
+    init(limit: Int = .max) {
         self.limit = limit
     }
 

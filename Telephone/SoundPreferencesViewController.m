@@ -38,7 +38,6 @@ static NSMenuItem *MenuItemForDevice(PresentationAudioDevice *device);
 @property(nonatomic, weak) IBOutlet NSPopUpButton *soundOutputPopUp;
 @property(nonatomic, weak) IBOutlet NSPopUpButton *ringtoneOutputPopUp;
 @property(nonatomic, weak) IBOutlet NSPopUpButton *ringtonePopUp;
-@property(nonatomic, weak) IBOutlet NSButton *useG711OnlyCheckBox;
 
 @end
 
@@ -85,10 +84,6 @@ NS_ASSUME_NONNULL_END
      [[PresentationSoundIO alloc] initWithInput:self.soundInputPopUp.selectedItem.representedObject
                                          output:self.soundOutputPopUp.selectedItem.representedObject
                                  ringtoneOutput:self.ringtoneOutputPopUp.selectedItem.representedObject]];
-}
-
-- (IBAction)changeUseG711Only:(id)sender {
-    self.userAgent.usesG711Only = (self.useG711OnlyCheckBox.state == NSControlStateValueOn) ? YES : NO;
 }
 
 - (void)updateAvailableSounds {

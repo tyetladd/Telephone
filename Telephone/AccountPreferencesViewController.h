@@ -54,6 +54,10 @@
 @property(nonatomic, weak) IBOutlet NSButton *IPv4Button;
 @property(nonatomic, weak) IBOutlet NSButton *IPv6Button;
 @property(nonatomic, weak) IBOutlet NSButton *updateIPAddressCheckBox;
+@property(nonatomic, weak) IBOutlet NSButton *expertModeCheckBox;
+@property(nonatomic, weak) IBOutlet NSTableView *inviteHeadersTable;
+@property(nonatomic, weak) IBOutlet NSButton *addInviteHeaderButton;
+@property(nonatomic, weak) IBOutlet NSButton *removeInviteHeaderButton;
 
 // Raises |Add Account| sheet.
 - (IBAction)showAddAccountSheet:(id)sender;
@@ -79,5 +83,8 @@
 // Used only for grouping radio buttons.
 - (IBAction)changeTransport:(id)sender;
 - (IBAction)changeIPVersion:(id)sender;
+- (IBAction)toggleExpertMode:(id)sender;
+- (IBAction)addInviteHeader:(id)sender;
+- (IBAction)removeInviteHeader:(id)sender;
 
 @end

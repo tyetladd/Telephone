@@ -1,0 +1,13 @@
+--- temp_pjsip/pjproject-2.15.1/pjlib/src/pj/ssl_sock_ossl.c	2024-12-16 06:55:44
++++ pjproject-2.15.1/pjlib/src/pj/ssl_sock_ossl.c	2025-11-24 16:27:12
+@@ -2412,9 +2412,7 @@
+             char buf[BUF_SIZE+1];
+             SSL_SESSION *sess;
+             
+-            sess = SSL_get_session(ossock->ossl_ssl);
+-
+-#if OPENSSL_VERSION_NUMBER >= 0x1010100fL
++            #if OPENSSL_VERSION_NUMBER >= 0x1010100fL && !defined(LIBRESSL_VERSION_NUMBER)
+             PJ_LOG(5, (THIS_FILE, "Session info: reused=%d, resumable=%d, "
+                        "timeout=%ld",
+                        (int)SSL_session_reused(ossock->ossl_ssl),

@@ -18,22 +18,14 @@
 
 public final class ReceiptValidatingContactCallHistoryRecordGetAllUseCaseOutput {
     private let origin: ContactCallHistoryRecordGetAllUseCaseOutput
-    private let receipt: Receipt
 
-    public init(origin: ContactCallHistoryRecordGetAllUseCaseOutput, receipt: Receipt) {
+    public init(origin: ContactCallHistoryRecordGetAllUseCaseOutput) {
         self.origin = origin
-        self.receipt = receipt
     }
 }
 
 extension ReceiptValidatingContactCallHistoryRecordGetAllUseCaseOutput: ContactCallHistoryRecordGetAllUseCaseOutput {
     public func update(records: [ContactCallHistoryRecord]) {
-        receipt.validate { result in
-            if case .receiptIsValid = result {
-                self.origin.update(records: records)
-            } else {
-                self.origin.update(records: Array(records.prefix(3)))
-            }
-        }
+        origin.update(records: records)
     }
 }

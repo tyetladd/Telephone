@@ -20,25 +20,22 @@ import UseCases
 
 final class CallHistoryViewEventTarget: NSObject {
     private let recordsGet: UseCase
-    private let purchaseCheck: UseCase
     private let recordRemoveAll: UseCase
     private let recordRemove: CallHistoryRecordRemoveUseCaseFactory
     private let callMake: CallHistoryCallMakeUseCaseFactory
 
     init(recordsGet: UseCase,
-         purchaseCheck: UseCase,
          recordRemoveAll: UseCase,
          recordRemove: CallHistoryRecordRemoveUseCaseFactory,
          callMake: CallHistoryCallMakeUseCaseFactory) {
         self.recordsGet = recordsGet
-        self.purchaseCheck = purchaseCheck
         self.recordRemoveAll = recordRemoveAll
         self.recordRemove = recordRemove
         self.callMake = callMake
     }
 
     func shouldReloadData() {
-        executeRecordGetAndPurchaseCheck()
+        recordsGet.execute()
     }
 
     func shouldRemoveAllRecords() {
@@ -53,36 +50,16 @@ final class CallHistoryViewEventTarget: NSObject {
         recordRemove.make(identifier: identifier).execute()
     }
 
-    private func executeRecordGetAndPurchaseCheck() {
-        recordsGet.execute()
-        purchaseCheck.execute()
-    }
 }
 
 extension CallHistoryViewEventTarget: CallHistoryEventTarget {
     func didUpdate(_ history: CallHistory) {
-        executeRecordGetAndPurchaseCheck()
+        recordsGet.execute()
     }
-}
-
-extension CallHistoryViewEventTarget: StoreEventTarget {
-    func didPurchase() {
-        executeRecordGetAndPurchaseCheck()
-    }
-
-    func didRestorePurchases() {
-        executeRecordGetAndPurchaseCheck()
-    }
-
-    func didStartPurchasingProduct(withIdentifier identifier: String) {}
-    func didFailPurchasing(error: String) {}
-    func didCancelPurchasing() {}
-    func didFailRestoringPurchases(error: String) {}
-    func didCancelRestoringPurchases() {}
 }
 
 extension CallHistoryViewEventTarget: DayChangeEventTarget {
     func dayDidChange() {
-        executeRecordGetAndPurchaseCheck()
+        recordsGet.execute()
     }
 }

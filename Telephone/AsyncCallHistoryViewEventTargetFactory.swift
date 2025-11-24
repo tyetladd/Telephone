@@ -29,9 +29,9 @@ final class AsyncCallHistoryViewEventTargetFactory: NSObject {
         self.main = main
     }
 
-    @objc func make(account: Account, view: CallHistoryView, purchaseCheck: UseCase, completion: @escaping (CallHistoryViewEventTarget) -> Void) {
+    @objc func make(account: Account, view: CallHistoryView, completion: @escaping (CallHistoryViewEventTarget) -> Void) {
         background.add {
-            let result = self.origin.make(account: account, view: view, purchaseCheck: purchaseCheck)
+            let result = self.origin.make(account: account, view: view)
             self.main.add {
                 completion(result)
             }

@@ -34,6 +34,12 @@ static NSString * const kAKSIPAccountPboardType = @"AKSIPAccountPboardType";
 // Maximum number of accounts.
 static const NSUInteger kAccountsMax = 32;
 
+@interface AccountPreferencesViewController ()
+
+@property(nonatomic) NSMutableArray<NSMutableDictionary *> *inviteHeaders;
+
+@end
+
 @implementation AccountPreferencesViewController
 
 @synthesize accountSetupController = _accountSetupController;
@@ -57,6 +63,8 @@ static const NSUInteger kAccountsMax = 32;
 - (void)awakeFromNib {
     // Register a pasteboard type to rearrange accounts with drag and drop.
     [[self accountsTable] registerForDraggedTypes:@[kAKSIPAccountPboardType]];
+
+    self.inviteHeaders = [[NSMutableArray alloc] init];
     
     NSInteger row = [[self accountsTable] selectedRow];
     if (row != -1) {
@@ -75,6 +83,59 @@ static const NSUInteger kAccountsMax = 32;
            selector:@selector(accountSetupControllerDidAddAccount:)
                name:AKAccountSetupControllerDidAddAccountNotification
              object:nil];
+}
+
+- (NSMutableArray<NSMutableDictionary *> *)mutableHeadersFromArray:(NSArray *)headers {
+    if (![headers isKindOfClass:[NSArray class]]) {
+        return [[NSMutableArray alloc] init];
+    }
+
+    NSMutableArray<NSMutableDictionary *> *result = [[NSMutableArray alloc] initWithCapacity:[headers count]];
+    for (id item in headers) {
+        if (![item isKindOfClass:[NSDictionary class]]) {
+            continue;
+        }
+
+        NSDictionary *header = (NSDictionary *)item;
+        NSString *name = header[AKSIPAccountKeys.customHeaderName] ?: @"";
+        NSString *value = header[AKSIPAccountKeys.customHeaderValue] ?: @"";
+        BOOL overwrite = [header[AKSIPAccountKeys.customHeaderOverwrite] boolValue];
+
+        [result addObject:[@{AKSIPAccountKeys.customHeaderName: name,
+                             AKSIPAccountKeys.customHeaderValue: value,
+                             AKSIPAccountKeys.customHeaderOverwrite: @(overwrite)} mutableCopy]];
+    }
+
+    return result;
+}
+
+- (NSArray<NSDictionary *> *)currentInviteHeadersPayload {
+    NSMutableArray<NSDictionary *> *result = [[NSMutableArray alloc] initWithCapacity:[self.inviteHeaders count]];
+
+    for (NSDictionary *header in self.inviteHeaders) {
+        NSString *name = header[AKSIPAccountKeys.customHeaderName] ?: @"";
+        NSString *value = header[AKSIPAccountKeys.customHeaderValue] ?: @"";
+        BOOL overwrite = [header[AKSIPAccountKeys.customHeaderOverwrite] boolValue];
+
+        if ([name length] == 0 && [value length] == 0) {
+            continue;
+        }
+
+        [result addObject:@{AKSIPAccountKeys.customHeaderName: name,
+                             AKSIPAccountKeys.customHeaderValue: value,
+                             AKSIPAccountKeys.customHeaderOverwrite: @(overwrite)}];
+    }
+
+    return result;
+}
+
+- (void)updateInviteHeaderControlsEnabledForAccountEnabled:(BOOL)isAccountEnabled expertMode:(BOOL)isExpertModeEnabled {
+    BOOL canEdit = !isAccountEnabled && isExpertModeEnabled;
+    self.expertModeCheckBox.enabled = !isAccountEnabled;
+    self.inviteHeadersTable.enabled = canEdit;
+    self.addInviteHeaderButton.enabled = canEdit;
+    NSInteger selectedRow = self.inviteHeadersTable.selectedRow;
+    self.removeInviteHeaderButton.enabled = canEdit && self.inviteHeadersTable.numberOfRows > 0 && selectedRow != -1;
 }
 
 - (void)dealloc {
@@ -169,11 +230,17 @@ static const NSUInteger kAccountsMax = 32;
     
     if (index >= 0) {
         NSDictionary *accountDict = savedAccounts[index];
+
+        BOOL accountEnabled = [accountDict[UserDefaultsKeys.accountEnabled] boolValue];
+        BOOL expertModeEnabled = [accountDict[AKSIPAccountKeys.expertModeEnabled] boolValue];
+        self.expertModeCheckBox.state = expertModeEnabled ? NSControlStateValueOn : NSControlStateValueOff;
+        self.inviteHeaders = [self mutableHeadersFromArray:accountDict[AKSIPAccountKeys.customInviteHeaders]];
+        [self.inviteHeadersTable reloadData];
         
         [[self accountEnabledCheckBox] setEnabled:YES];
         
         // Conditionally enable fields and set checkboxes state.
-        if ([accountDict[UserDefaultsKeys.accountEnabled] boolValue]) {
+        if (accountEnabled) {
             [[self accountEnabledCheckBox] setState:NSControlStateValueOn];
             [[self accountDescriptionField] setEnabled:NO];
             [[self fullNameField] setEnabled:NO];
@@ -235,6 +302,8 @@ static const NSUInteger kAccountsMax = 32;
             [[self IPv6Button] setEnabled:YES];
             [[self updateIPAddressCheckBox] setEnabled:YES];
         }
+
+        [self updateInviteHeaderControlsEnabledForAccountEnabled:accountEnabled expertMode:expertModeEnabled];
         
         // Populate fields.
         
@@ -432,6 +501,9 @@ static const NSUInteger kAccountsMax = 32;
     
     BOOL isChecked = [[self accountEnabledCheckBox] state] == NSControlStateValueOn;
     accountDict[UserDefaultsKeys.accountEnabled] = @(isChecked);
+
+    accountDict[AKSIPAccountKeys.expertModeEnabled] = @([[self expertModeCheckBox] state] == NSControlStateValueOn);
+    accountDict[AKSIPAccountKeys.customInviteHeaders] = [self currentInviteHeadersPayload];
     
     if (isChecked) {
         // User enabled the account.
@@ -548,6 +620,7 @@ static const NSUInteger kAccountsMax = 32;
         [[self IPv4Button] setEnabled:NO];
         [[self IPv6Button] setEnabled:NO];
         [[self updateIPAddressCheckBox] setEnabled:NO];
+        [self updateInviteHeaderControlsEnabledForAccountEnabled:YES expertMode:[accountDict[AKSIPAccountKeys.expertModeEnabled] boolValue]];
 
         // Mark accounts table as needing redisplay.
         [[self accountsTable] reloadData];
@@ -583,6 +656,7 @@ static const NSUInteger kAccountsMax = 32;
         [[self IPv4Button] setEnabled:YES];
         [[self IPv6Button] setEnabled:YES];
         [[self updateIPAddressCheckBox] setEnabled:YES];
+        [self updateInviteHeaderControlsEnabledForAccountEnabled:NO expertMode:[[self expertModeCheckBox] state] == NSControlStateValueOn];
     }
     
     savedAccounts[index] = accountDict;
@@ -616,11 +690,58 @@ static const NSUInteger kAccountsMax = 32;
 // Group radio buttons by providing them the same action.
 - (IBAction)changeIPVersion:(id)sender {}
 
+- (IBAction)toggleExpertMode:(id)sender {
+    BOOL expertModeEnabled = [self.expertModeCheckBox state] == NSControlStateValueOn;
+    BOOL accountEnabled = [self.accountEnabledCheckBox state] == NSControlStateValueOn;
+    [self updateInviteHeaderControlsEnabledForAccountEnabled:accountEnabled expertMode:expertModeEnabled];
+}
+
+- (IBAction)addInviteHeader:(id)sender {
+    BOOL accountEnabled = [self.accountEnabledCheckBox state] == NSControlStateValueOn;
+    if (accountEnabled || [self.expertModeCheckBox state] != NSControlStateValueOn) {
+        return;
+    }
+
+    if (self.inviteHeaders == nil) {
+        self.inviteHeaders = [[NSMutableArray alloc] init];
+    }
+
+    [self.inviteHeaders addObject:[@{AKSIPAccountKeys.customHeaderName: @"",
+                                     AKSIPAccountKeys.customHeaderValue: @"",
+                                     AKSIPAccountKeys.customHeaderOverwrite: @NO} mutableCopy]];
+    [self.inviteHeadersTable reloadData];
+
+    NSInteger newRow = (NSInteger)self.inviteHeaders.count - 1;
+    [self.inviteHeadersTable selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
+    [self.inviteHeadersTable editColumn:0 row:newRow withEvent:nil select:YES];
+    [self updateInviteHeaderControlsEnabledForAccountEnabled:accountEnabled expertMode:YES];
+}
+
+- (IBAction)removeInviteHeader:(id)sender {
+    BOOL accountEnabled = [self.accountEnabledCheckBox state] == NSControlStateValueOn;
+    if (accountEnabled || [self.expertModeCheckBox state] != NSControlStateValueOn) {
+        return;
+    }
+
+    NSInteger selectedRow = self.inviteHeadersTable.selectedRow;
+    if (selectedRow < 0 || (NSUInteger)selectedRow >= [self.inviteHeaders count]) {
+        return;
+    }
+
+    [self.inviteHeaders removeObjectAtIndex:(NSUInteger)selectedRow];
+    [self.inviteHeadersTable reloadData];
+    [self updateInviteHeaderControlsEnabledForAccountEnabled:accountEnabled expertMode:YES];
+}
+
 
 #pragma mark -
 #pragma mark NSTableView data source
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView {
+    if (aTableView == self.inviteHeadersTable) {
+        return (NSInteger)[self.inviteHeaders count];
+    }
+
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     return [[defaults arrayForKey:UserDefaultsKeys.accounts] count];
 }
@@ -628,7 +749,18 @@ static const NSUInteger kAccountsMax = 32;
 - (id)tableView:(NSTableView *)aTableView
         objectValueForTableColumn:(NSTableColumn *)aTableColumn
         row:(NSInteger)rowIndex {
-    
+    if (aTableView == self.inviteHeadersTable) {
+        NSDictionary *header = self.inviteHeaders[(NSUInteger)rowIndex];
+        if ([[aTableColumn identifier] isEqualToString:@"HeaderName"]) {
+            return header[AKSIPAccountKeys.customHeaderName];
+        } else if ([[aTableColumn identifier] isEqualToString:@"HeaderValue"]) {
+            return header[AKSIPAccountKeys.customHeaderValue];
+        } else if ([[aTableColumn identifier] isEqualToString:@"HeaderOverwrite"]) {
+            return header[AKSIPAccountKeys.customHeaderOverwrite];
+        }
+        return @"";
+    }
+
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
     NSDictionary *accountDict = [defaults arrayForKey:UserDefaultsKeys.accounts][rowIndex];
@@ -651,6 +783,28 @@ static const NSUInteger kAccountsMax = 32;
     }
     
     return returnValue;
+}
+
+- (void)tableView:(NSTableView *)aTableView
+   setObjectValue:(id)anObject
+   forTableColumn:(NSTableColumn *)aTableColumn
+              row:(NSInteger)rowIndex {
+    if (aTableView != self.inviteHeadersTable) {
+        return;
+    }
+
+    if (rowIndex < 0 || (NSUInteger)rowIndex >= [self.inviteHeaders count]) {
+        return;
+    }
+
+    NSMutableDictionary *header = self.inviteHeaders[(NSUInteger)rowIndex];
+    if ([[aTableColumn identifier] isEqualToString:@"HeaderName"]) {
+        header[AKSIPAccountKeys.customHeaderName] = anObject ?: @"";
+    } else if ([[aTableColumn identifier] isEqualToString:@"HeaderValue"]) {
+        header[AKSIPAccountKeys.customHeaderValue] = anObject ?: @"";
+    } else if ([[aTableColumn identifier] isEqualToString:@"HeaderOverwrite"]) {
+        header[AKSIPAccountKeys.customHeaderOverwrite] = @([anObject boolValue]);
+    }
 }
 
 - (BOOL)tableView:(NSTableView *)aTableView
@@ -736,8 +890,14 @@ static const NSUInteger kAccountsMax = 32;
 #pragma mark NSTableView delegate
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification {
-    NSInteger row = [[self accountsTable] selectedRow];
-    [self populateFieldsForAccountAtIndex:row];
+    if (aNotification.object == self.accountsTable) {
+        NSInteger row = [[self accountsTable] selectedRow];
+        [self populateFieldsForAccountAtIndex:row];
+    } else if (aNotification.object == self.inviteHeadersTable) {
+        BOOL accountEnabled = [self.accountEnabledCheckBox state] == NSControlStateValueOn;
+        BOOL expertModeEnabled = [self.expertModeCheckBox state] == NSControlStateValueOn;
+        [self updateInviteHeaderControlsEnabledForAccountEnabled:accountEnabled expertMode:expertModeEnabled];
+    }
 }
 
 

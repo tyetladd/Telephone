@@ -19,33 +19,18 @@
 import Foundation
 
 public final class UserAgentStartUseCase {
-    private lazy var purchaseCheck: UseCase = {
-        return self.factory.make(output: WeakPurchaseCheckUseCaseOutput(origin: self))
-    }()
-
     private let agent: UserAgent
-    private let factory: PurchaseCheckUseCaseFactory
+    private let maxCalls: Int
 
-    public init(agent: UserAgent, factory: PurchaseCheckUseCaseFactory) {
+    public init(agent: UserAgent, maxCalls: Int = 30) {
         self.agent = agent
-        self.factory = factory
+        self.maxCalls = maxCalls
     }
 }
 
 extension UserAgentStartUseCase: UseCase {
     public func execute() {
-        purchaseCheck.execute()
-    }
-}
-
-extension UserAgentStartUseCase: PurchaseCheckUseCaseOutput {
-    public func didCheckPurchase(expiration: Date) {
-        agent.maxCalls = 30
-        agent.start()
-    }
-
-    public func didFailCheckingPurchase() {
-        agent.maxCalls = 3
+        agent.maxCalls = maxCalls
         agent.start()
     }
 }

@@ -97,6 +97,8 @@ NSString * const AKAccountSetupControllerDidAddAccountNotification = @"AKAccount
     accountDict[AKSIPAccountKeys.updateContactHeader] = @YES;
     accountDict[AKSIPAccountKeys.updateViaHeader] = @YES;
     accountDict[AKSIPAccountKeys.updateSDP] = @YES;
+    accountDict[AKSIPAccountKeys.expertModeEnabled] = @NO;
+    accountDict[AKSIPAccountKeys.customInviteHeaders] = @[];
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSMutableArray *savedAccounts = [NSMutableArray arrayWithArray:[defaults arrayForKey:UserDefaultsKeys.accounts]];

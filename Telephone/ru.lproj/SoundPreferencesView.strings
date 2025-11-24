@@ -25,6 +25,3 @@
 
 /* Class = "NSTextFieldCell"; title = "Ringtone Output:"; ObjectID = "477"; */
 "477.title" = "Выход рингтона:";
-
-/* Class = "NSButtonCell"; title = "Use only G.711 codec"; ObjectID = "2bR-wc-3xa"; */
-"2bR-wc-3xa.title" = "Использовать только кодек G.711";

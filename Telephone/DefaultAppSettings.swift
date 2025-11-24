@@ -50,6 +50,8 @@ final class DefaultAppSettings: NSObject {
         AKSIPAccountKeys.updateContactHeader: true,
         AKSIPAccountKeys.updateViaHeader: true,
         AKSIPAccountKeys.updateSDP: true,
+        AKSIPAccountKeys.expertModeEnabled: false,
+        AKSIPAccountKeys.customInviteHeaders: [],
     ]
 }
 
@@ -71,6 +73,13 @@ private func makeDefaults(for localization: String) -> [String: Any] {
         UserDefaultsKeys.transportPort: 0,
         UserDefaultsKeys.useDNSSRV: false,
         UserDefaultsKeys.useG711Only: false,
+        UserDefaultsKeys.enabledCodecs: [
+            "opus/48000/2",
+            "G722/16000/1",
+            "G729/8000/1",
+            "PCMA/8000/1",
+            "PCMU/8000/1"
+        ],
         UserDefaultsKeys.useICE: false,
         UserDefaultsKeys.useQoS: true,
         UserDefaultsKeys.voiceActivityDetection: false,

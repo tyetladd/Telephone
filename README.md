@@ -41,9 +41,9 @@ Build and install:
 
 Download:
 
-    $ curl -o pjproject-2.10.tar.gz https://codeload.github.com/pjsip/pjproject/tar.gz/2.10
-    $ tar xzvf pjproject-2.10.tar.gz
-    $ cd pjproject-2.10
+    $ curl -o pjproject-2.15.1.tar.gz https://codeload.github.com/pjsip/pjproject/tar.gz/2.15.1
+    $ tar xzvf pjproject-2.15.1.tar.gz
+    $ cd pjproject-2.15.1
 
 Create `pjlib/include/pj/config_site.h`:
 
@@ -58,14 +58,30 @@ Create `pjlib/include/pj/config_site.h`:
 Patch:
 
     $ patch -p0 -i /path/to/Telephone/ThirdParty/PJSIP/patches/sock_qos_darwin.patch
-    $ patch -p0 -i /path/to/Telephone/ThirdParty/PJSIP/patches/os_core_unix.patch
     $ patch -p0 -i /path/to/Telephone/ThirdParty/PJSIP/patches/coreaudio_dev.patch
+    $ patch -p0 -i /path/to/Telephone/ThirdParty/PJSIP/patches/ssl_sock_ossl.patch
 
-Build and install (remove `--with-opus` option if you don’t need Opus):
+Build and install (arm64-only binaries are sufficient for the app; keep x86_64 only if you explicitly need Rosetta):
 
-    $ ./configure --prefix=/path/to/Telephone/ThirdParty/PJSIP --with-opus=/path/to/Telephone/ThirdParty/Opus --with-ssl=/path/to/Telephone/ThirdParty/LibreSSL --disable-video --disable-libyuv --disable-libwebrtc --host=arm-apple-darwin CFLAGS='-arch arm64 -arch x86_64 -Os -DNDEBUG -mmacosx-version-min=13.5' CXXFLAGS='-arch arm64 -arch x86_64 -Os -DNDEBUG -mmacosx-version-min=13.5'
+    $ export PKG_CONFIG_PATH=/path/to/Telephone/ThirdParty/bcg729/lib/pkgconfig:/path/to/Telephone/ThirdParty/Opus/lib/pkgconfig
+    $ ./configure --prefix=/path/to/Telephone/ThirdParty/PJSIP \
+        --with-opus=/path/to/Telephone/ThirdParty/Opus \
+        --with-bcg729=/path/to/Telephone/ThirdParty/bcg729 \
+        --with-ssl=/path/to/Telephone/ThirdParty/LibreSSL \
+        --disable-video --disable-libyuv --disable-libwebrtc \
+        --host=arm-apple-darwin \
+        CFLAGS='-arch arm64 -Os -DNDEBUG -mmacosx-version-min=13.5' \
+        CXXFLAGS='-arch arm64 -Os -DNDEBUG -mmacosx-version-min=13.5' \
+        LDFLAGS='-arch arm64 -mmacosx-version-min=13.5'
+
+    $ make dep
     $ make lib
     $ make install
+
+Notes:
+- `--with-opus` bundles Opus; omit if you do not want Opus.
+- `--with-bcg729` enables G.729 (bcg729). Ensure `ThirdParty/bcg729` is built first so headers/libs are available via `PKG_CONFIG_PATH`.
+- Keeping only arm64 reduces build time and output size; add `-arch x86_64` to the flag variables and remove `--host=arm-apple-darwin` if you need a universal build for Rosetta.
 
     
 Build Telephone.

@@ -53,6 +53,8 @@ private func string(from dict: [String: Any], prefix: String) -> String {
             valueString = "\(value)"
         } else if let value = value as? Int {
             valueString = "\(value)"
+        } else if let value = value as? [String] {
+            valueString = "[\(value.joined(separator: ","))]"
         } else {
             valueString = "\"\(value)\""
         }
@@ -71,6 +73,16 @@ private func dictionary(from keys: [String: String], settings: [String: Any], de
             if let current = settings[kv.key] as? Int, current != defaults[kv.key] as? Int {
                 res[kv.key] = current
             }
+        case "Array":
+            if let current = settings[kv.key] as? [String] {
+                if let defaultValue = defaults[kv.key] as? [String] {
+                    if current != defaultValue {
+                        res[kv.key] = current
+                    }
+                } else {
+                    res[kv.key] = current
+                }
+            }
         default:
             if let current = settings[kv.key] as? String, current != defaults[kv.key] as? String {
                 res[kv.key] = current
@@ -87,6 +99,8 @@ private func dictionary(from settings: KeyValueSettings) -> [String: Any] {
                 res[kv.key] = settings.bool(forKey: kv.key)
             case "Int":
                 res[kv.key] = settings.integer(forKey: kv.key)
+            case "Array":
+                res[kv.key] = settings.array(forKey: kv.key) as? [String]
             default:
                 res[kv.key] = settings[kv.key]
             }
@@ -116,6 +130,7 @@ private let settingsKeys = [
     UserDefaultsKeys.telephoneNumberFormatterSplitsLastFourDigits: "Bool",
     UserDefaultsKeys.transportPort: "Int",
     UserDefaultsKeys.useDNSSRV: "Bool",
+    UserDefaultsKeys.enabledCodecs: "Array",
     UserDefaultsKeys.useG711Only: "Bool",
     UserDefaultsKeys.useICE: "Bool",
     UserDefaultsKeys.useQoS: "Bool",
@@ -150,4 +165,6 @@ private let accountKeys = [
     AKSIPAccountKeys.updateContactHeader: "Bool",
     AKSIPAccountKeys.updateViaHeader: "Bool",
     AKSIPAccountKeys.updateSDP: "Bool",
+    AKSIPAccountKeys.expertModeEnabled: "Bool",
+    AKSIPAccountKeys.customInviteHeaders: "Array",
 ]
