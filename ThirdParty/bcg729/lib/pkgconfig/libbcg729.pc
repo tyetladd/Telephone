@@ -1,5 +1,5 @@
 # This is a comment
-prefix=/Users/ncamargo/projects/Telephone/ThirdParty/bcg729
+prefix=/Users/aokunev/work/Telephone/ThirdParty/bcg729
 exec_prefix=${prefix}
 includedir=${prefix}/include
 

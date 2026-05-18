@@ -5,6 +5,49 @@ physical phone anywhere you have a decent network connection.
 
 ## Building
 
+### Prerequisites
+
+- Full Xcode (Command Line Tools alone cannot build .app bundles). Switch with:
+  ```
+  sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+  ```
+- Homebrew packages:
+  ```
+  brew install opencore-amr
+  ```
+
+### Third-party libraries
+
+Dependencies install into `ThirdParty/`:
+
+| Library | Directory | Notes |
+|---------|-----------|-------|
+| Opus | `ThirdParty/Opus/` | Optional codec |
+| LibreSSL | `ThirdParty/LibreSSL/` | TLS for PJSIP |
+| bcg729 | `ThirdParty/bcg729/` | G.729 codec (build from source for x86_64) |
+| PJSIP | `ThirdParty/PJSIP/` | SIP stack, links all of the above |
+
+### bcg729
+
+The pre-built `ThirdParty/bcg729/` library is arm64-only. Rebuild for x86_64:
+
+```
+$ curl -LO https://github.com/BelledonneCommunications/bcg729/archive/refs/tags/1.1.1.tar.gz
+$ tar xzf 1.1.1.tar.gz
+$ cd bcg729-1.1.1
+$ ./autogen.sh
+$ ./configure --prefix=/path/to/Telephone/ThirdParty/bcg729 --disable-shared \
+    CFLAGS='-arch x86_64 -Os -mmacosx-version-min=13.5'
+$ make
+$ make install
+```
+
+After installing, fix the pkg-config file if it contains a stale prefix:
+```
+$ sed -i '' 's|prefix=.*|prefix=/path/to/Telephone/ThirdParty/bcg729|' \
+    /path/to/Telephone/ThirdParty/bcg729/lib/pkgconfig/libbcg729.pc
+```
+
 ### Opus
 
 Opus codec is optional.
@@ -15,9 +58,10 @@ Download:
     $ tar xzvf opus-1.3.1.tar.gz
     $ cd opus-1.3.1
 
-Build and install:
+Build and install (adjust arch for your Mac — x86_64 for Intel, arm64 for Apple Silicon):
 
-    $ ./configure --prefix=/path/to/Telephone/ThirdParty/Opus --disable-shared CFLAGS='-arch arm64 -arch x86_64 -Os -mmacosx-version-min=13.5'
+    $ ./configure --prefix=/path/to/Telephone/ThirdParty/Opus --disable-shared \
+        CFLAGS='-arch x86_64 -Os -mmacosx-version-min=13.5'
     $ make
     $ make install
 
@@ -33,7 +77,8 @@ Download:
 
 Build and install:
 
-    $ ./configure --prefix=/path/to/Telephone/ThirdParty/LibreSSL --disable-shared CFLAGS='-arch arm64 -arch x86_64 -Os -mmacosx-version-min=13.5'
+    $ ./configure --prefix=/path/to/Telephone/ThirdParty/LibreSSL --disable-shared \
+        CFLAGS='-arch x86_64 -Os -mmacosx-version-min=13.5'
     $ make
     $ make install
 
@@ -58,33 +103,94 @@ Create `pjlib/include/pj/config_site.h`:
 Patch:
 
     $ patch -p0 -i /path/to/Telephone/ThirdParty/PJSIP/patches/sock_qos_darwin.patch
-    $ patch -p0 -i /path/to/Telephone/ThirdParty/PJSIP/patches/coreaudio_dev.patch
-    $ patch -p0 -i /path/to/Telephone/ThirdParty/PJSIP/patches/ssl_sock_ossl.patch
+    $ patch -p1 -i /path/to/Telephone/ThirdParty/PJSIP/patches/coreaudio_dev.patch
+    $ patch -p1 -i /path/to/Telephone/ThirdParty/PJSIP/patches/ssl_sock_ossl.patch
 
-Build and install (arm64-only binaries are sufficient for the app; keep x86_64 only if you explicitly need Rosetta):
+Build and install (x86_64 example — use `-arch arm64` and `--host=arm-apple-darwin` for Apple Silicon):
 
-    $ export PKG_CONFIG_PATH=/path/to/Telephone/ThirdParty/bcg729/lib/pkgconfig:/path/to/Telephone/ThirdParty/Opus/lib/pkgconfig
+    $ export PKG_CONFIG_PATH="/path/to/Telephone/ThirdParty/bcg729/lib/pkgconfig:/path/to/Telephone/ThirdParty/Opus/lib/pkgconfig"
     $ ./configure --prefix=/path/to/Telephone/ThirdParty/PJSIP \
         --with-opus=/path/to/Telephone/ThirdParty/Opus \
         --with-bcg729=/path/to/Telephone/ThirdParty/bcg729 \
         --with-ssl=/path/to/Telephone/ThirdParty/LibreSSL \
         --disable-video --disable-libyuv --disable-libwebrtc \
-        --host=arm-apple-darwin \
-        CFLAGS='-arch arm64 -Os -DNDEBUG -mmacosx-version-min=13.5' \
-        CXXFLAGS='-arch arm64 -Os -DNDEBUG -mmacosx-version-min=13.5' \
-        LDFLAGS='-arch arm64 -mmacosx-version-min=13.5'
+        CFLAGS='-arch x86_64 -Os -DNDEBUG -mmacosx-version-min=13.5' \
+        CXXFLAGS='-arch x86_64 -Os -DNDEBUG -mmacosx-version-min=13.5' \
+        LDFLAGS='-arch x86_64 -mmacosx-version-min=13.5'
 
     $ make dep
-    $ make lib
+    $ make
     $ make install
 
-Notes:
-- `--with-opus` bundles Opus; omit if you do not want Opus.
-- `--with-bcg729` enables G.729 (bcg729). Ensure `ThirdParty/bcg729` is built first so headers/libs are available via `PKG_CONFIG_PATH`.
-- Keeping only arm64 reduces build time and output size; add `-arch x86_64` to the flag variables and remove `--host=arm-apple-darwin` if you need a universal build for Rosetta.
+**Important — library naming for x86_64:** the Xcode project links against
+`-lpjsua-arm-apple-darwin` and similar arm-named libraries. When building for
+x86_64, PJSIP produces `libpjsua-x86_64-apple-darwin*.a`. Create symlinks so the
+linker finds them:
 
-    
-Build Telephone.
+```
+$ cd /path/to/Telephone/ThirdParty/PJSIP/lib
+$ for lib in *-x86_64-apple-darwin*.a; do
+    newname=$(echo "$lib" | sed 's/x86_64-apple-darwin[0-9.]*/arm-apple-darwin/')
+    ln -sf "$lib" "$newname"
+  done
+```
+
+**Note:** the Xcode project has been updated to include `ThirdParty/bcg729/lib`,
+`/usr/local/lib` in `LIBRARY_SEARCH_PATHS`, and `-lopencore-amrnb`,
+`-lopencore-amrwb` in `OTHER_LDFLAGS`. If you regenerate the project, re-apply
+these changes.
+
+### Building the app
+
+```
+$ xcodebuild -scheme Telephone -configuration Debug \
+    -destination "platform=macOS,arch=$(uname -m)" \
+    -derivedDataPath .derived \
+    CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+    build
+```
+
+Or use the convenience script:
+
+```
+$ ./run-latest.sh                           # Debug, native arch
+$ ARCH=x86_64 CONFIG=Release ./run-latest.sh
+```
+
+The app will be at `.derived/Build/Products/Debug/Telephone.app`. Launch with:
+
+```
+$ open .derived/Build/Products/Debug/Telephone.app
+```
+
+### Creating a DMG
+
+```
+# Build Release first
+$ xcodebuild -scheme Telephone -configuration Release \
+    -destination "platform=macOS,arch=$(uname -m)" \
+    -derivedDataPath .derived \
+    CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+    build
+
+# Package into DMG
+$ APP=.derived/Build/Products/Release/Telephone.app
+$ STAGING=$(mktemp -d)
+$ cp -R "$APP" "$STAGING/"
+$ ln -s /Applications "$STAGING/Applications"
+$ hdiutil create -volname Telephone -srcfolder "$STAGING" \
+    -ov -format UDZO Telephone-$(uname -m).dmg
+```
+
+Note: the DMG is unsigned and not notarized. On first launch, right-click the
+app and select Open to bypass Gatekeeper.
+
+### Running tests
+
+```
+$ xcodebuild -scheme Telephone -configuration Debug \
+    -destination "platform=macOS,arch=$(uname -m)" test
+```
 
 ## Contribution
 

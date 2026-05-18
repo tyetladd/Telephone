@@ -5655,6 +5655,8 @@
 					"\"$(SRCROOT)/ThirdParty/PJSIP/lib\"",
 					"\"$(SRCROOT)/ThirdParty/LibreSSL/lib\"",
 					"\"$(SRCROOT)/ThirdParty/Opus/lib\"",
+					"\"$(SRCROOT)/ThirdParty/bcg729/lib\"",
+					/usr/local/lib,
 				);
 				MARKETING_VERSION = 1.6;
 				OTHER_LDFLAGS = (
@@ -5677,6 +5679,8 @@
 					"-lcrypto",
 					"-lssl",
 					"-lopus",
+					"-lopencore-amrnb",
+					"-lopencore-amrwb",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.tlphn.Telephone;
 				PRODUCT_NAME = Telephone;
@@ -5707,6 +5711,8 @@
 					"\"$(SRCROOT)/ThirdParty/PJSIP/lib\"",
 					"\"$(SRCROOT)/ThirdParty/LibreSSL/lib\"",
 					"\"$(SRCROOT)/ThirdParty/Opus/lib\"",
+					"\"$(SRCROOT)/ThirdParty/bcg729/lib\"",
+					/usr/local/lib,
 				);
 				MARKETING_VERSION = 1.6;
 				OTHER_LDFLAGS = (
@@ -5729,6 +5735,8 @@
 					"-lcrypto",
 					"-lssl",
 					"-lopus",
+					"-lopencore-amrnb",
+					"-lopencore-amrwb",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.tlphn.Telephone;
 				PRODUCT_NAME = Telephone;
