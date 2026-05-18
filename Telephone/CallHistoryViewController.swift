@@ -52,28 +52,19 @@ final class CallHistoryViewController: NSViewController {
         target?.shouldReloadData()
     }
 
-    private func updateVisibleRowIcons() {
-        tableView.enumerateAvailableRowViews { (rowView, row) in
-            guard row < records.count,
-                  let cellView = rowView.view(atColumn: 0) as? NSTableCellView,
-                  let imageView = cellView.imageView else { return }
-            let record = records[row]
-            cellView.unbind(.hidden)
-            cellView.isHidden = false
-            imageView.unbind(.hidden)
-            imageView.isHidden = false
-            if record.isMessage {
-                let name = record.isIncoming ? "bubble.left" : "bubble.left.fill"
-                imageView.image = NSImage(systemSymbolName: name, accessibilityDescription: nil)
-                imageView.contentTintColor = record.isIncoming ? .secondaryLabelColor : .labelColor
-            } else if record.isIncoming {
-                imageView.image = NSImage(systemSymbolName: "phone.arrow.down.left", accessibilityDescription: nil)
-                imageView.contentTintColor = record.isMissed ? .systemRed : .secondaryLabelColor
-            } else {
-                imageView.image = NSImage(systemSymbolName: "phone.arrow.up.right", accessibilityDescription: nil)
-                imageView.contentTintColor = .secondaryLabelColor
-            }
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        guard let column = tableColumn, row < records.count else { return nil }
+        if column == tableView.tableColumns.first {
+            let iconIdentifier = NSUserInterfaceItemIdentifier("IconCell")
+            let cellView = tableView.makeView(withIdentifier: iconIdentifier, owner: self) as? CallHistoryIconCellView
+                ?? CallHistoryIconCellView()
+            cellView.identifier = iconIdentifier
+            cellView.objectValue = records[row]
+            return cellView
         }
+        let cellView = tableView.makeView(withIdentifier: column.identifier, owner: self) as? NSTableCellView
+        cellView?.objectValue = records[row]
+        return cellView
     }
 
     override func keyDown(with event: NSEvent) {
@@ -185,7 +176,6 @@ extension CallHistoryViewController: CallHistoryView {
         } else {
             tableView.reloadData()
         }
-        DispatchQueue.main.async { self.updateVisibleRowIcons() }
     }
 
     private func restoreSelection(oldIndex: Int, old: [PresentationCallHistoryRecord], new: [PresentationCallHistoryRecord]) {

@@ -763,6 +763,7 @@
 		A836C0F580AF467C9816040E /* MessageCompositionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E8983752C14B658A4DE206 /* MessageCompositionViewController.swift */; };
 		E549CF506FA54DC2B2D6CB10 /* MessageCompositionWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8341E14BC8E447BCA9E55586 /* MessageCompositionWindowController.swift */; };
 		6CA4A98858C9494DABA8100B /* MessageSendUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC94EEDDA25416683810BCF /* MessageSendUseCase.swift */; };
+		8A2FA6FE216FCB1000C9579B /* CallHistoryIconCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2FA6FD216FCB1000C9579A /* CallHistoryIconCellView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1761,6 +1762,7 @@
 		D4E8983752C14B658A4DE206 /* MessageCompositionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCompositionViewController.swift; sourceTree = "<group>"; };
 		8341E14BC8E447BCA9E55586 /* MessageCompositionWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCompositionWindowController.swift; sourceTree = "<group>"; };
 		CDC94EEDDA25416683810BCF /* MessageSendUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageSendUseCase.swift; sourceTree = "<group>"; };
+		8A2FA6FD216FCB1000C9579A /* CallHistoryIconCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallHistoryIconCellView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1934,6 +1936,7 @@
 				8A1DA8141DF07EEE00F5BA40 /* WorkspaceSleepStatusTests.swift */,
 				D4E8983752C14B658A4DE206 /* MessageCompositionViewController.swift */,
 				8341E14BC8E447BCA9E55586 /* MessageCompositionWindowController.swift */,
+				8A2FA6FD216FCB1000C9579A /* CallHistoryIconCellView.swift */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				AA4D490A1BB99DD6004D1D4B /* Frameworks */,
@@ -4200,6 +4203,7 @@
 				D3F1C0A12B816BDE00A1A1AA /* AKSIPMessenger.m in Sources */,
 				A836C0F580AF467C9816040E /* MessageCompositionViewController.swift in Sources */,
 				E549CF506FA54DC2B2D6CB10 /* MessageCompositionWindowController.swift in Sources */,
+				8A2FA6FE216FCB1000C9579B /* CallHistoryIconCellView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
