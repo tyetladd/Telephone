@@ -74,10 +74,43 @@ NSString * const kPhoneLabel = @"PhoneLabel";
     return self = [super initWithNibName:name bundle:bundle];
 }
 
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    // Add Call button
+    NSButton *callButton = [NSButton buttonWithTitle:NSLocalizedString(@"Call", @"Call button")
+                                              target:self
+                                              action:@selector(makeCall:)];
+    callButton.bezelStyle = NSBezelStyleRounded;
+    callButton.keyEquivalent = @"\r"; // Enter key
+
+    // Add Send Text button
+    NSButton *sendTextButton = [NSButton buttonWithTitle:NSLocalizedString(@"Send Text", @"Send text button")
+                                                  target:self
+                                                  action:@selector(sendText:)];
+    sendTextButton.bezelStyle = NSBezelStyleRounded;
+
+    // Position buttons to the right of the call destination field
+    NSView *field = self.callDestinationField;
+    NSView *superview = field.superview;
+    [superview addSubview:callButton];
+    [superview addSubview:sendTextButton];
+
+    callButton.translatesAutoresizingMaskIntoConstraints = NO;
+    sendTextButton.translatesAutoresizingMaskIntoConstraints = NO;
+
+    [NSLayoutConstraint activateConstraints:@[
+        [callButton.leadingAnchor constraintEqualToAnchor:field.trailingAnchor constant:8],
+        [callButton.centerYAnchor constraintEqualToAnchor:field.centerYAnchor],
+        [sendTextButton.leadingAnchor constraintEqualToAnchor:callButton.trailingAnchor constant:8],
+        [sendTextButton.centerYAnchor constraintEqualToAnchor:field.centerYAnchor],
+    ]];
+}
+
 - (void)awakeFromNib {
     // Exclude comma from the callDestination tokenizing character set.
     [[self callDestinationField] setTokenizingCharacterSet:[NSCharacterSet characterSetWithCharactersInString:@""]];
-    
+
     [[self callDestinationField] setCompletionDelay:0.4];
 }
 
@@ -92,6 +125,13 @@ NSString * const kPhoneLabel = @"PhoneLabel";
     AKSIPURI *uri = [self callDestinationURI];
     if (uri != nil) {
         [[self accountController] makeCallToURI:uri phoneLabel:phoneLabel];
+    }
+}
+
+- (IBAction)sendText:(id)sender {
+    NSString *destination = [self.callDestinationField stringValue];
+    if (self.messageSendBlock && destination.length > 0) {
+        self.messageSendBlock(destination);
     }
 }
 

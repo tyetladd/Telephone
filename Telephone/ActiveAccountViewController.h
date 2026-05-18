@@ -44,6 +44,8 @@ extern NSString * const kPhoneLabel;
 @property(nonatomic, readonly) BOOL allowsCallDestinationInput;
 @property(nonatomic, readonly) NSView *keyView;
 
+@property(nonatomic, copy) void (^messageSendBlock)(NSString *destination);
+
 - (instancetype)initWithAccountController:(AccountController *)accountController NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithNibName:(NSNibName)name bundle:(NSBundle *)bundle NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
@@ -54,6 +56,9 @@ extern NSString * const kPhoneLabel;
 
 // Changes the active SIP URI index in the call destination token.
 - (IBAction)changeCallDestinationURIIndex:(id)sender;
+
+// Sends a text message.
+- (IBAction)sendText:(id)sender;
 
 - (void)allowCallDestinationInput;
 - (void)disallowCallDestinationInput;
