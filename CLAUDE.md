@@ -65,6 +65,29 @@ Telephone/           macOS app shell: view controllers, windows, storyboards,
 - **Domain pattern**: Audio device abstraction — `SoundIO`, `SystemAudioDevice`, `UserAgentAudioDevice` — maps between system audio devices and PJSIP user-agent audio devices.
 - **Swift/ObjC interop**: Bridging headers at `Telephone/Telephone-Bridging-Header.h` and `ReceiptValidation/ReceiptValidation-Bridging-Header.h` expose ObjC headers to Swift. Some modules import `UseCases` via `@import UseCases;`.
 
+### SIP MESSAGE (instant messaging) feature
+
+Incoming SIP MESSAGE flows:
+1. `AKSIPMessengerOnPager2Callback` (PJSIP thread) — validates MIME type (`text/*` only), copies `pj_str_t` bytes into `NSString`, then **`dispatch_async(main)`** before calling `handleIncomingMessage:from:`.
+2. `AKSIPUserAgent.handleIncomingMessage:from:` (main thread) — posts `AKSIPUserAgentDidReceiveMessageNotification`.
+3. `CompositionRoot.setupMessageObservers` (main queue observer) — parses the raw SIP From-header URI via `components(ofSIPURI:)`, creates a `CallHistoryRecord(kind:.message)`, adds it via `CallHistoryRecordAddUseCase`, and plays a `Ping` sound.
+
+Outgoing SIP MESSAGE flows:
+1. `ActiveAccountViewController.messageSendBlock` posts `TelephoneDidRequestMessageCompositionNotification` with the destination address.
+2. `CompositionRoot` observer creates `MessageCompositionViewController` + `MessageCompositionWindowController`, storing the controller in `messageWindowControllers` (released on `NSWindow.willCloseNotification`).
+3. `onSend` closure calls `AKSIPMessenger.sendMessage:to:accountId:`, then adds a `CallHistoryRecord(kind:.message, isIncoming:false)`.
+
+Key files:
+- `AKSIPUserAgent.m` — PJSIP callback and `handleIncomingMessage:from:`
+- `AKSIPMessenger.m` — `pjsua_im_send` wrapper
+- `AKSIPUserAgentNotifications.h/m` — notification name constants (including `TelephoneDidRequestMessageCompositionNotification`)
+- `CompositionRoot.swift` — wires both flows together; owns `messageWindowControllers`
+- `MessageCompositionViewController.swift` / `MessageCompositionWindowController.swift` — compose UI
+- `CallHistoryIconCellView.swift` — renders phone/chat SF Symbol in call history column 0
+- `UseCases/CallHistoryRecord.swift` — `HistoryRecordKind` enum (`.call` / `.message`); message identifier includes `stableHash(text)`
+
+**Threading rule**: Every PJSIP C callback must marshal to the main thread before touching any ObjC/Swift objects or posting notifications. Use `dispatch_async(dispatch_get_main_queue(), ^{ … })` as the very first thing after reading PJSIP pointer values (copy any `pj_str_t` data to `NSString` before dispatching).
+
 ### Test structure
 
 Each module has a corresponding test target. Test doubles live in `DomainTestDoubles/` and `UseCasesTestDoubles/`. Tests use XCTest with Given/When/Then comment style, naming convention `test_<behavior>`.
