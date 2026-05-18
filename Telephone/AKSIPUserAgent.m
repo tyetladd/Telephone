@@ -114,10 +114,29 @@ static void AKSIPMessengerOnPager2Callback(pjsua_call_id call_id, const pj_str_t
                                            const pj_str_t *to, const pj_str_t *contact,
                                            const pj_str_t *mime_type, const pj_str_t *body,
                                            pjsip_rx_data *rdata, pjsua_acc_id acc_id) {
+    // Only handle text/* messages; ignore XML, binary, multipart, etc.
+    if (mime_type && mime_type->ptr && mime_type->slen > 0) {
+        NSString *mimeStr = [[NSString alloc] initWithBytes:mime_type->ptr
+                                                     length:mime_type->slen
+                                                   encoding:NSUTF8StringEncoding];
+        if (![mimeStr hasPrefix:@"text/"]) {
+            return;
+        }
+    }
+
+    // Copy ptr-based strings while PJSIP memory is still valid (on the PJSIP thread).
+    NSString *fromStr = (from && from->ptr)
+        ? ([[NSString alloc] initWithBytes:from->ptr length:from->slen encoding:NSUTF8StringEncoding] ?: @"")
+        : @"";
+    NSString *bodyStr = (body && body->ptr)
+        ? ([[NSString alloc] initWithBytes:body->ptr length:body->slen encoding:NSUTF8StringEncoding] ?: @"")
+        : @"";
+
+    // All other PJSIP callbacks marshal to the main thread before posting notifications; do the same here.
     AKSIPUserAgent *agent = [AKSIPUserAgent sharedUserAgent];
-    NSString *fromStr = [[NSString alloc] initWithBytes:from->ptr length:from->slen encoding:NSUTF8StringEncoding];
-    NSString *bodyStr = [[NSString alloc] initWithBytes:body->ptr length:body->slen encoding:NSUTF8StringEncoding];
-    [agent handleIncomingMessage:bodyStr from:fromStr];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [agent handleIncomingMessage:bodyStr from:fromStr];
+    });
 }
 
 

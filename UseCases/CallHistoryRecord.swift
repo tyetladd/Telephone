@@ -80,14 +80,7 @@ private func stableHash(_ text: String) -> String {
 
 extension CallHistoryRecord: Equatable {
     public static func ==(lhs: CallHistoryRecord, rhs: CallHistoryRecord) -> Bool {
-        return
-            lhs.identifier == rhs.identifier &&
-            lhs.uri == rhs.uri &&
-            lhs.date == rhs.date &&
-            lhs.duration == rhs.duration &&
-            lhs.isIncoming == rhs.isIncoming &&
-            lhs.isMissed == rhs.isMissed &&
-            lhs.kind == rhs.kind
+        return lhs.identifier == rhs.identifier
     }
 }
 

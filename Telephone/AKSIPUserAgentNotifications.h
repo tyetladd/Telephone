@@ -34,3 +34,7 @@ extern NSString * const AKSIPUserAgentDidDetectNATNotification;
 // Posted when the user agent receives an incoming SIP MESSAGE (text).
 // userInfo keys: @"body" (NSString), @"from" (NSString)
 extern NSString * const AKSIPUserAgentDidReceiveMessageNotification;
+
+// Posted (on the main thread) when the UI should open a message composition window.
+// userInfo keys: @"destination" (NSString)
+extern NSString * const TelephoneDidRequestMessageCompositionNotification;

@@ -36,6 +36,7 @@ final class CompositionRoot: NSObject {
     @objc let accountControllers: AccountControllers
     @objc let nameServers: NameServers
     private let defaults: UserDefaults
+    private var messageWindowControllers: [NSWindowController] = []
 
     private let userAgentEventSource: AKSIPUserAgentEventSource
     private let devicesChangeEventSource: CoreAudioSystemAudioDevicesChangeEventSource
@@ -265,8 +266,9 @@ final class CompositionRoot: NSObject {
                   let body = notification.userInfo?["body"] as? String,
                   let from = notification.userInfo?["from"] as? String else { return }
             guard let controller = self.accountControllers.enabled.first else { return }
+            let (fromUser, fromHost) = Self.components(ofSIPURI: from)
             let record = CallHistoryRecord(
-                uri: URI(user: from, host: "", displayName: ""),
+                uri: URI(user: fromUser, host: fromHost.isEmpty ? controller.account.domain : fromHost, displayName: ""),
                 date: Date(),
                 isIncoming: true,
                 text: body
@@ -280,7 +282,7 @@ final class CompositionRoot: NSObject {
 
         // Observe message composition requests from ObjC side
         NotificationCenter.default.addObserver(
-            forName: NSNotification.Name("TelephoneDidRequestMessageComposition"),
+            forName: NSNotification.Name.TelephoneDidRequestMessageComposition,
             object: nil,
             queue: .main
         ) { [weak self] notification in
@@ -318,7 +320,37 @@ final class CompositionRoot: NSObject {
                 os_log("Outgoing message added to history: %{public}@", log: .default, type: .info, String(text.prefix(30)))
             }
             let wc = MessageCompositionWindowController(viewController: messageVC)
+            self.messageWindowControllers.append(wc)
+            NotificationCenter.default.addObserver(
+                forName: NSWindow.willCloseNotification,
+                object: wc.window,
+                queue: .main
+            ) { [weak self, weak wc] _ in
+                guard let wc else { return }
+                self?.messageWindowControllers.removeAll { $0 === wc }
+            }
             wc.showWindow(nil)
         }
+    }
+
+    // Extracts (user, host) from a raw SIP From-header value such as:
+    //   "sip:alice@example.com"
+    //   "Alice <sip:alice@example.com;transport=UDP>"
+    private static func components(ofSIPURI raw: String) -> (user: String, host: String) {
+        var s = raw.trimmingCharacters(in: .whitespaces)
+        if let lt = s.range(of: "<"), let gt = s.range(of: ">") {
+            s = String(s[lt.upperBound..<gt.lowerBound])
+        }
+        for prefix in ["sips:", "sip:"] where s.lowercased().hasPrefix(prefix) {
+            s = String(s.dropFirst(prefix.count)); break
+        }
+        if let semi = s.firstIndex(of: ";") { s = String(s[..<semi]) }
+        if let at = s.lastIndex(of: "@") {
+            let user = String(s[..<at])
+            var host = String(s[s.index(after: at)...])
+            if let colon = host.lastIndex(of: ":") { host = String(host[..<colon]) }
+            return (user, host)
+        }
+        return (s, "")
     }
 }

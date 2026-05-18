@@ -199,10 +199,11 @@ static NSString * const kRussian = @"ru";
     _destinationToCall = @"";
 
     ActiveAccountViewController *activeAccountVC = [[ActiveAccountViewController alloc] initWithAccountController:self];
+    __weak typeof(self) weakSelf = self;
     activeAccountVC.messageSendBlock = ^(NSString *destination) {
         [[NSNotificationCenter defaultCenter]
-            postNotificationName:@"TelephoneDidRequestMessageComposition"
-                          object:self
+            postNotificationName:TelephoneDidRequestMessageCompositionNotification
+                          object:weakSelf
                         userInfo:@{@"destination": destination ?: @""}];
     };
     _accountViewController

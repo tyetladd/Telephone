@@ -98,7 +98,7 @@ final class CallHistoryViewController: NSViewController {
 
 private extension CallHistoryViewController {
     func pickRecord(at index: Int) {
-        guard !records.isEmpty else { return }
+        guard index >= 0, index < records.count else { return }
         let record = records[index]
         if record.isMessage {
             let alert = NSAlert()
@@ -112,7 +112,7 @@ private extension CallHistoryViewController {
     }
 
     func removeRecord(at index: Int) {
-        guard !records.isEmpty else { return }
+        guard index >= 0, index < records.count else { return }
         let record = records[index]
         makeDeleteRecordAlert(recordName: record.name).beginSheetModal(for: view.window!) {
             if $0 == .alertFirstButtonReturn {

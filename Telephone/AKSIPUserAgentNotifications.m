@@ -22,3 +22,4 @@ NSString * const AKSIPUserAgentDidFinishStartingNotification = @"AKSIPUserAgentD
 NSString * const AKSIPUserAgentDidFinishStoppingNotification = @"AKSIPUserAgentDidFinishStopping";
 NSString * const AKSIPUserAgentDidDetectNATNotification = @"AKSIPUserAgentDidDetectNAT";
 NSString * const AKSIPUserAgentDidReceiveMessageNotification = @"AKSIPUserAgentDidReceiveMessage";
+NSString * const TelephoneDidRequestMessageCompositionNotification = @"TelephoneDidRequestMessageComposition";

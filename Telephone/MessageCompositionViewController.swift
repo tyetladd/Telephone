@@ -5,13 +5,14 @@ final class MessageCompositionViewController: NSViewController {
     var onSend: ((String) -> Void)?
 
     private let destinationLabel = NSTextField(labelWithString: "")
-    private let textView = NSTextView(frame: NSRect(x: 0, y: 0, width: 400, height: 80))
+    private let scrollView = NSScrollView(frame: .zero)
+    private let textView = NSTextView(frame: .zero)
     private let sendButton = NSButton(title: NSLocalizedString("Send", comment: "Send button"),
-                                       target: self,
-                                       action: #selector(send(_:)))
+                                      target: nil,
+                                      action: #selector(send(_:)))
     private let cancelButton = NSButton(title: NSLocalizedString("Cancel", comment: "Cancel button"),
-                                         target: self,
-                                         action: #selector(cancelAction(_:)))
+                                        target: nil,
+                                        action: #selector(cancelAction(_:)))
 
     override func loadView() {
         view = NSView(frame: NSRect(x: 0, y: 0, width: 420, height: 180))
@@ -19,28 +20,29 @@ final class MessageCompositionViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        sendButton.target = self
+        cancelButton.target = self
+
         destinationLabel.stringValue = destination
+
         textView.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
         textView.isEditable = true
         textView.isSelectable = true
+        textView.autoresizingMask = [.width]
+
+        scrollView.documentView = textView
+        scrollView.hasVerticalScroller = true
 
         sendButton.bezelStyle = .rounded
         sendButton.keyEquivalent = "\r"
         cancelButton.bezelStyle = .rounded
         cancelButton.keyEquivalent = "\u{1b}"
 
-        for v in [destinationLabel, textView, sendButton, cancelButton] {
+        for v in [destinationLabel, scrollView, sendButton, cancelButton] as [NSView] {
             v.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview(v)
         }
-
-        let scrollView = NSScrollView(frame: .zero)
-        scrollView.documentView = textView
-        scrollView.hasVerticalScroller = true
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(scrollView)
-        scrollView.removeFromSuperview()
-        view.addSubview(scrollView)
 
         NSLayoutConstraint.activate([
             destinationLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 16),
@@ -66,7 +68,8 @@ final class MessageCompositionViewController: NSViewController {
     }
 
     @objc private func send(_ sender: Any) {
-        let text = textView.string
+        let text = textView.string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
         onSend?(text)
         view.window?.close()
     }
