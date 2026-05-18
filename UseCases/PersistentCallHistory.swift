@@ -77,34 +77,48 @@ extension PersistentCallHistory: CallHistory {
 
 private extension CallHistoryRecord {
     init(dictionary: [String: Any]) {
-        self.init(
-            uri: URI(
-                user: dictionary[Keys.user.rawValue] as? String ?? "",
-                host: dictionary[Keys.host.rawValue] as? String ?? "",
-                displayName: dictionary[Keys.name.rawValue] as? String ?? ""
-            ),
-            date: dictionary[Keys.date.rawValue] as? Date ?? Date.distantPast,
-            duration: dictionary[Keys.duration.rawValue] as? Int ?? 0,
-            isIncoming: dictionary[Keys.incoming.rawValue] as? Bool ?? false,
-            isMissed: dictionary[Keys.missed.rawValue] as? Bool ?? false
+        let uri = URI(
+            user: dictionary[Keys.user.rawValue] as? String ?? "",
+            host: dictionary[Keys.host.rawValue] as? String ?? "",
+            displayName: dictionary[Keys.name.rawValue] as? String ?? ""
         )
+        let date = dictionary[Keys.date.rawValue] as? Date ?? Date.distantPast
+        let kindRaw = dictionary[Keys.kind.rawValue] as? String
+        let kind = kindRaw.flatMap(HistoryRecordKind.init(rawValue:)) ?? .call
+        if kind == .message {
+            let text = dictionary[Keys.text.rawValue] as? String ?? ""
+            self.init(uri: uri, date: date, isIncoming: dictionary[Keys.incoming.rawValue] as? Bool ?? false, text: text)
+        } else {
+            self.init(
+                uri: uri,
+                date: date,
+                duration: dictionary[Keys.duration.rawValue] as? Int ?? 0,
+                isIncoming: dictionary[Keys.incoming.rawValue] as? Bool ?? false,
+                isMissed: dictionary[Keys.missed.rawValue] as? Bool ?? false
+            )
+        }
     }
 }
 
 private func dictionaries(from records: [CallHistoryRecord]) -> [[String: Any]] {
-    return records.map {
-        [
-            Keys.user.rawValue: $0.uri.user,
-            Keys.host.rawValue: $0.uri.host,
-            Keys.name.rawValue: $0.uri.displayName,
-            Keys.date.rawValue: $0.date,
-            Keys.duration.rawValue: $0.duration,
-            Keys.incoming.rawValue: $0.isIncoming,
-            Keys.missed.rawValue: $0.isMissed
+    return records.map { record in
+        var dict: [String: Any] = [
+            Keys.user.rawValue: record.uri.user,
+            Keys.host.rawValue: record.uri.host,
+            Keys.name.rawValue: record.uri.displayName,
+            Keys.date.rawValue: record.date,
+            Keys.duration.rawValue: record.duration,
+            Keys.incoming.rawValue: record.isIncoming,
+            Keys.missed.rawValue: record.isMissed,
+            Keys.kind.rawValue: record.kind.rawValue,
         ]
+        if let text = record.text {
+            dict[Keys.text.rawValue] = text
+        }
+        return dict
     }
 }
 
 private enum Keys: String {
-    case user, host, name, date, duration, incoming, missed
+    case user, host, name, date, duration, incoming, missed, kind, text
 }
