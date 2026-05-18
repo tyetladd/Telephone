@@ -31,7 +31,10 @@ final class PresentationCallHistoryRecord: NSObject {
     private let callDuration: String
 
     @objc var duration: String {
-        return kind == .message ? (text ?? "") : callDuration
+        if kind == .message, let text = text {
+            return text.count > 60 ? String(text.prefix(60)) + "…" : text
+        }
+        return callDuration
     }
 
     init(identifier: String, contact: PresentationContact, date: String, duration: String, isIncoming: Bool, isMissed: Bool, kind: HistoryRecordKind, text: String?) {

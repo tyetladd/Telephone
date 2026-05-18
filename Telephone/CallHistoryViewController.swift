@@ -93,7 +93,16 @@ final class CallHistoryViewController: NSViewController {
 private extension CallHistoryViewController {
     func pickRecord(at index: Int) {
         guard !records.isEmpty else { return }
-        target?.didPickRecord(withIdentifier: records[index].identifier)
+        let record = records[index]
+        if record.isMessage {
+            let alert = NSAlert()
+            alert.messageText = NSLocalizedString("Message", comment: "Message alert title.")
+            alert.informativeText = record.text ?? ""
+            alert.addButton(withTitle: NSLocalizedString("OK", comment: "OK button."))
+            alert.beginSheetModal(for: view.window!)
+        } else {
+            target?.didPickRecord(withIdentifier: record.identifier)
+        }
     }
 
     func removeRecord(at index: Int) {
