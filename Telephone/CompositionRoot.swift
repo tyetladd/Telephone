@@ -293,13 +293,19 @@ final class CompositionRoot: NSObject {
                     return
                 }
                 let accId = Int32(controller.account.identifier)
-                let status = self.userAgent.messenger.sendMessage(text, to: destination, accountId: accId)
+                let uri: String
+                if destination.contains("@") {
+                    uri = destination.hasPrefix("sip:") ? destination : "sip:\(destination)"
+                } else {
+                    uri = "sip:\(destination)@\(controller.account.domain)"
+                }
+                let status = self.userAgent.messenger.sendMessage(text, to: uri, accountId: accId)
                 guard status == 0 else {
-                    os_log("Failed to send message to %{public}@, status: %d", log: .default, type: .error, destination, status)
+                    os_log("Failed to send message to %{public}@, status: %d", log: .default, type: .error, uri, status)
                     return
                 }
                 let record = CallHistoryRecord(
-                    uri: URI(user: destination, host: "", displayName: ""),
+                    uri: URI(user: destination, host: controller.account.domain, displayName: ""),
                     date: Date(),
                     isIncoming: false,
                     text: text
