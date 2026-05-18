@@ -52,25 +52,27 @@ final class CallHistoryViewController: NSViewController {
         target?.shouldReloadData()
     }
 
-    func tableView(_ tableView: NSTableView, didAdd rowView: NSTableRowView, forRow row: Int) {
-        guard row < records.count else { return }
-        let record = records[row]
-        guard let cellView = rowView.view(atColumn: 0) as? NSTableCellView else { return }
-        cellView.unbind(.hidden)
-        cellView.isHidden = false
-        guard let imageView = cellView.imageView else { return }
-        imageView.unbind(.hidden)
-        imageView.isHidden = false
-        if record.isMessage {
-            let name = record.isIncoming ? "bubble.left" : "bubble.left.fill"
-            imageView.image = NSImage(systemSymbolName: name, accessibilityDescription: nil)
-            imageView.contentTintColor = record.isIncoming ? .secondaryLabelColor : .labelColor
-        } else if record.isIncoming {
-            imageView.image = NSImage(systemSymbolName: "phone.arrow.down.left", accessibilityDescription: nil)
-            imageView.contentTintColor = record.isMissed ? .systemRed : .secondaryLabelColor
-        } else {
-            imageView.image = NSImage(systemSymbolName: "phone.arrow.up.right", accessibilityDescription: nil)
-            imageView.contentTintColor = .secondaryLabelColor
+    private func updateVisibleRowIcons() {
+        tableView.enumerateAvailableRowViews { (rowView, row) in
+            guard row < records.count,
+                  let cellView = rowView.view(atColumn: 0) as? NSTableCellView,
+                  let imageView = cellView.imageView else { return }
+            let record = records[row]
+            cellView.unbind(.hidden)
+            cellView.isHidden = false
+            imageView.unbind(.hidden)
+            imageView.isHidden = false
+            if record.isMessage {
+                let name = record.isIncoming ? "bubble.left" : "bubble.left.fill"
+                imageView.image = NSImage(systemSymbolName: name, accessibilityDescription: nil)
+                imageView.contentTintColor = record.isIncoming ? .secondaryLabelColor : .labelColor
+            } else if record.isIncoming {
+                imageView.image = NSImage(systemSymbolName: "phone.arrow.down.left", accessibilityDescription: nil)
+                imageView.contentTintColor = record.isMissed ? .systemRed : .secondaryLabelColor
+            } else {
+                imageView.image = NSImage(systemSymbolName: "phone.arrow.up.right", accessibilityDescription: nil)
+                imageView.contentTintColor = .secondaryLabelColor
+            }
         }
     }
 
@@ -183,6 +185,7 @@ extension CallHistoryViewController: CallHistoryView {
         } else {
             tableView.reloadData()
         }
+        DispatchQueue.main.async { self.updateVisibleRowIcons() }
     }
 
     private func restoreSelection(oldIndex: Int, old: [PresentationCallHistoryRecord], new: [PresentationCallHistoryRecord]) {
