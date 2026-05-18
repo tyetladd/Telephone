@@ -315,7 +315,7 @@ final class CompositionRoot: NSObject {
                 )
                 let history = self.callHistories.history(withUUID: controller.account.uuid)
                 CallHistoryRecordAddUseCase(history: history, record: record, domain: controller.account.domain).add(record)
-                os_log("Outgoing message added to history: %{public}@", log: .default, type: .info, text.prefix(30))
+                os_log("Outgoing message added to history: %{public}@", log: .default, type: .info, String(text.prefix(30)))
             }
             let wc = MessageCompositionWindowController(viewController: messageVC)
             wc.showWindow(nil)
