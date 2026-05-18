@@ -54,9 +54,9 @@ Opus codec is optional.
 
 Download:
 
-    $ curl -O https://archive.mozilla.org/pub/opus/opus-1.3.1.tar.gz
-    $ tar xzvf opus-1.3.1.tar.gz
-    $ cd opus-1.3.1
+    $ curl -LO https://github.com/xiph/opus/releases/download/v1.5.2/opus-1.5.2.tar.gz
+    $ tar xzf opus-1.5.2.tar.gz
+    $ cd opus-1.5.2
 
 Build and install (adjust arch for your Mac — x86_64 for Intel, arm64 for Apple Silicon):
 
@@ -86,9 +86,9 @@ Build and install:
 
 Download:
 
-    $ curl -o pjproject-2.15.1.tar.gz https://codeload.github.com/pjsip/pjproject/tar.gz/2.15.1
-    $ tar xzvf pjproject-2.15.1.tar.gz
-    $ cd pjproject-2.15.1
+    $ curl -o pjproject-2.17.tar.gz https://codeload.github.com/pjsip/pjproject/tar.gz/2.17
+    $ tar xzf pjproject-2.17.tar.gz
+    $ cd pjproject-2.17
 
 Create `pjlib/include/pj/config_site.h`:
 
@@ -105,6 +105,12 @@ Patch:
     $ patch -p0 -i /path/to/Telephone/ThirdParty/PJSIP/patches/sock_qos_darwin.patch
     $ patch -p1 -i /path/to/Telephone/ThirdParty/PJSIP/patches/coreaudio_dev.patch
     $ patch -p1 -i /path/to/Telephone/ThirdParty/PJSIP/patches/ssl_sock_ossl.patch
+
+PJSIP 2.17 adds a `SSL_CTX_set_ciphersuites` call for TLS 1.3 that
+LibreSSL 3.x does not implement. Apply the LibreSSL guard:
+
+    $ sed -i '' '1979s/!USING_BORINGSSL/!USING_BORINGSSL \&\& !defined(LIBRESSL_VERSION_NUMBER)/' \
+        pjlib/src/pj/ssl_sock_ossl.c
 
 Build and install (x86_64 example — use `-arch arm64` and `--host=arm-apple-darwin` for Apple Silicon):
 
@@ -130,7 +136,7 @@ linker finds them:
 ```
 $ cd /path/to/Telephone/ThirdParty/PJSIP/lib
 $ for lib in *-x86_64-apple-darwin*.a; do
-    newname=$(echo "$lib" | sed 's/x86_64-apple-darwin[0-9.]*/arm-apple-darwin/')
+    newname=$(echo "$lib" | sed 's/-x86_64-apple-darwin[0-9.]*\.a$/-arm-apple-darwin.a/')
     ln -sf "$lib" "$newname"
   done
 ```
@@ -143,7 +149,7 @@ these changes.
 ### Building the app
 
 ```
-$ xcodebuild -scheme Telephone -configuration Debug \
+$ xcodebuild -project Telephone.xcodeproj -scheme Telephone -configuration Debug \
     -destination "platform=macOS,arch=$(uname -m)" \
     -derivedDataPath .derived \
     CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
@@ -163,11 +169,19 @@ The app will be at `.derived/Build/Products/Debug/Telephone.app`. Launch with:
 $ open .derived/Build/Products/Debug/Telephone.app
 ```
 
+If registration fails immediately (503), make sure old instances are killed
+first and launch the binary directly:
+
+```
+$ killall Telephone 2>/dev/null
+$ .derived/Build/Products/Release/Telephone.app/Contents/MacOS/Telephone &
+```
+
 ### Creating a DMG
 
 ```
 # Build Release first
-$ xcodebuild -scheme Telephone -configuration Release \
+$ xcodebuild -project Telephone.xcodeproj -scheme Telephone -configuration Release \
     -destination "platform=macOS,arch=$(uname -m)" \
     -derivedDataPath .derived \
     CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
@@ -188,7 +202,7 @@ app and select Open to bypass Gatekeeper.
 ### Running tests
 
 ```
-$ xcodebuild -scheme Telephone -configuration Debug \
+$ xcodebuild -project Telephone.xcodeproj -scheme Telephone -configuration Debug \
     -destination "platform=macOS,arch=$(uname -m)" test
 ```
 

@@ -12,6 +12,7 @@ DESTINATION="${DESTINATION:-platform=macOS,arch=$ARCH}"
 
 echo "Building Telephone ($CONFIGURATION, $ARCH)…"
 xcodebuild \
+  -project "$ROOT/Telephone.xcodeproj" \
   -scheme Telephone \
   -configuration "$CONFIGURATION" \
   -destination "$DESTINATION" \

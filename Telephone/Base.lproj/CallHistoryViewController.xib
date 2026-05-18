@@ -43,7 +43,7 @@
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         </textFieldCell>
                                         <prototypeCellViews>
-                                            <tableCellView id="GQL-B4-dJ7">
+                                            <tableCellView id="GQL-B4-dJ7" customClass="CallHistoryIconCellView" customModule="Telephone" customModuleProvider="target">
                                                 <rect key="frame" x="11" y="1" width="27" height="44"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
@@ -53,15 +53,15 @@
                                                             <imageReference key="image" image="phone.arrow.up.right.fill" catalog="system" symbolScale="small"/>
                                                         </imageCell>
                                                         <color key="contentTintColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
-                                                        <connections>
-                                                            <binding destination="GQL-B4-dJ7" name="hidden" keyPath="objectValue.isIncoming" id="tOK-kH-icO"/>
-                                                        </connections>
                                                     </imageView>
                                                 </subviews>
                                                 <constraints>
                                                     <constraint firstItem="cdt-zC-WCA" firstAttribute="top" secondItem="GQL-B4-dJ7" secondAttribute="top" constant="9" id="EDn-ph-8EJ"/>
                                                     <constraint firstItem="cdt-zC-WCA" firstAttribute="leading" secondItem="GQL-B4-dJ7" secondAttribute="leading" constant="8" id="SMW-Jo-2mY"/>
                                                 </constraints>
+                                                <connections>
+                                                    <outlet property="imageView" destination="cdt-zC-WCA" id="Xvq-R2-Wjs"/>
+                                                </connections>
                                             </tableCellView>
                                         </prototypeCellViews>
                                     </tableColumn>

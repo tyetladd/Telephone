@@ -52,17 +52,6 @@ final class CallHistoryViewController: NSViewController {
         target?.shouldReloadData()
     }
 
-    func tableView(_ tableView: NSTableView, didAdd rowView: NSTableRowView, forRow row: Int) {
-        guard row < records.count else { return }
-        let record = records[row]
-        guard let cellView = rowView.view(atColumn: 0) as? NSTableCellView,
-              let imageView = cellView.imageView else { return }
-        if !(cellView is CallHistoryIconCellView) {
-            object_setClass(cellView, CallHistoryIconCellView.self)
-        }
-        cellView.objectValue = record
-    }
-
     override func keyDown(with event: NSEvent) {
         if isReturnKey(event) {
             pickRecord(at: tableView.selectedRow)

@@ -9,19 +9,23 @@ Telephone is a macOS VoIP SIP softphone (GPL-3.0). It uses PJSIP as the underlyi
 ## Build & Test
 
 ```bash
-# Build unsigned for native architecture (Debug)
-xcodebuild -scheme Telephone -configuration Debug \
+# Build unsigned for native architecture (Debug) — -project flag required
+xcodebuild -project Telephone.xcodeproj -scheme Telephone -configuration Debug \
   -destination "platform=macOS,arch=$(uname -m)" \
   -derivedDataPath .derived \
   CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
   build
 
 # Build and launch (convenience script)
-./run-latest.sh                           # Debug, arm64 by default
+./run-latest.sh                           # Debug
 ARCH=x86_64 CONFIG=Release ./run-latest.sh
 
+# Launch app (kill old instances first if SIP 503 appears)
+killall Telephone 2>/dev/null
+.derived/Build/Products/Release/Telephone.app/Contents/MacOS/Telephone &
+
 # Run all unit tests
-xcodebuild -scheme Telephone -configuration Debug \
+xcodebuild -project Telephone.xcodeproj -scheme Telephone -configuration Debug \
   -destination "platform=macOS,arch=$(uname -m)" test
 ```
 
