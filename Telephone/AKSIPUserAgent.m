@@ -21,6 +21,7 @@
 @import UseCases;
 
 #import "AKNSString+PJSUA.h"
+#import "AKSIPMessenger.h"
 #import "AKSIPAccount.h"
 #import "AKSIPCall.h"
 #import "AKSIPURIParser.h"
@@ -101,10 +102,23 @@ static NSArray<NSString *> *AKDefaultEnabledCodecs(void) {
 
 @property(nonatomic, readonly) NSThread *thread;
 
+@property(nonatomic, strong) AKSIPMessenger *messenger;
+
 /// Updates codecs according to current preferences.
 - (void)updateCodecs;
 
 @end
+
+
+static void AKSIPMessengerOnPager2Callback(pjsua_call_id call_id, const pj_str_t *from,
+                                           const pj_str_t *to, const pj_str_t *contact,
+                                           const pj_str_t *mime_type, const pj_str_t *body,
+                                           pjsip_rx_data *rdata, pjsua_acc_id acc_id) {
+    AKSIPUserAgent *agent = [AKSIPUserAgent sharedUserAgent];
+    NSString *fromStr = [[NSString alloc] initWithBytes:from->ptr length:from->slen encoding:NSUTF8StringEncoding];
+    NSString *bodyStr = [[NSString alloc] initWithBytes:body->ptr length:body->slen encoding:NSUTF8StringEncoding];
+    [agent handleIncomingMessage:bodyStr from:fromStr];
+}
 
 
 @implementation AKSIPUserAgent
@@ -414,6 +428,7 @@ static NSArray<NSString *> *AKDefaultEnabledCodecs(void) {
     userAgentConfig.cb.on_reg_state = &PJSUAOnAccountRegistrationState;
     userAgentConfig.cb.on_nat_detect = &PJSUAOnNATDetect;
     userAgentConfig.cb.on_acc_find_for_incoming = &PJSUAOnAccountFindForIncoming;
+    userAgentConfig.cb.on_pager2 = &AKSIPMessengerOnPager2Callback;
 
     // Initialize PJSUA.
     status = pjsua_init(&userAgentConfig, &loggingConfig, &mediaConfig);
@@ -423,6 +438,8 @@ static NSArray<NSString *> *AKDefaultEnabledCodecs(void) {
         [self thread_callOnMain:completion withFlag:NO];
         return;
     }
+
+    _messenger = [[AKSIPMessenger alloc] initWithUserAgent:self];
 
     // Create ringback tones.
     unsigned i, samplesPerFrame;
@@ -1104,6 +1121,11 @@ static NSArray<NSString *> *AKDefaultEnabledCodecs(void) {
     }
     
     return theString;
+}
+
+- (void)handleIncomingMessage:(NSString *)body from:(NSString *)fromURI {
+    // Stub for now — will be wired in a later task via notification
+    NSLog(@"Incoming message from %@: %@", fromURI, body);
 }
 
 @end

@@ -13,6 +13,7 @@
 #import "AKSIPAccount.h"
 #import "AKSIPCall.h"
 #import "AKSIPCallNotifications.h"
+#import "AKSIPMessenger.h"
 #import "AKSIPURI.h"
 #import "AKSIPUserAgent.h"
 #import "PJSIPLogBuffer.h"
