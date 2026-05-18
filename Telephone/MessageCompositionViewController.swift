@@ -66,11 +66,12 @@ final class MessageCompositionViewController: NSViewController {
     }
 
     @objc private func send(_ sender: Any) {
-        onSend?(textView.string)
-        dismiss(self)
+        let text = textView.string
+        onSend?(text)
+        view.window?.close()
     }
 
     @objc private func cancelAction(_ sender: Any) {
-        dismiss(self)
+        view.window?.close()
     }
 }

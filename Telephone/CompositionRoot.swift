@@ -19,6 +19,7 @@
 import Contacts
 import Foundation
 import UseCases
+import os
 
 final class CompositionRoot: NSObject {
     @objc let userAgent: AKSIPUserAgent
@@ -286,18 +287,24 @@ final class CompositionRoot: NSObject {
             let messageVC = MessageCompositionViewController()
             messageVC.destination = destination
             messageVC.onSend = { [weak self] text in
-                guard let self,
-                      let controller = self.accountControllers.enabled.first else { return }
+                guard let self else { return }
+                guard let controller = self.accountControllers.enabled.first else {
+                    os_log("No enabled account found to send message to %{public}@", log: .default, type: .error, destination)
+                    return
+                }
                 let accId = Int32(controller.account.identifier)
                 let status = self.userAgent.messenger.sendMessage(text, to: destination, accountId: accId)
-                guard status == 0 else { return }
+                guard status == 0 else {
+                    os_log("Failed to send message to %{public}@, status: %d", log: .default, type: .error, destination, status)
+                    return
+                }
                 let record = CallHistoryRecord(
                     uri: URI(user: destination, host: "", displayName: ""),
                     date: Date(),
                     isIncoming: false,
                     text: text
                 )
-                let history = callHistories.history(withUUID: controller.account.uuid)
+                let history = self.callHistories.history(withUUID: controller.account.uuid)
                 CallHistoryRecordAddUseCase(history: history, record: record, domain: controller.account.domain).add(record)
             }
             let wc = MessageCompositionWindowController(viewController: messageVC)
