@@ -28,12 +28,18 @@ public final class CallHistoryRecordAddUseCase {
     }
 }
 
+extension CallHistoryRecordAddUseCase {
+    public func add(_ record: CallHistoryRecord) {
+        history.add(recordByRemovingHostIfNeeded(from: record))
+    }
+}
+
 extension CallHistoryRecordAddUseCase: UseCase {
     public func execute() {
         history.add(recordByRemovingHostIfNeeded(from: record))
     }
 
-    private func recordByRemovingHostIfNeeded(from record: CallHistoryRecord) -> CallHistoryRecord {
+    fileprivate func recordByRemovingHostIfNeeded(from record: CallHistoryRecord) -> CallHistoryRecord {
         if shouldRemoveHost(from: record) {
             return record.removingHost()
         } else {
