@@ -760,6 +760,9 @@
 		AAFC002C1074D0B50018C7DA /* GeneralPreferencesView.xib in Resources */ = {isa = PBXBuildFile; fileRef = AAFC002B1074D0B50018C7DA /* GeneralPreferencesView.xib */; };
 		AAFCFFBD1074BFCA0018C7DA /* AccountSetupController.m in Sources */ = {isa = PBXBuildFile; fileRef = AAFCFFBC1074BFCA0018C7DA /* AccountSetupController.m */; };
 		D3F1C0A12B816BDE00A1A1AA /* AKSIPMessenger.m in Sources */ = {isa = PBXBuildFile; fileRef = D3F1C0A32B816BDE00A1A1AA /* AKSIPMessenger.m */; };
+		A836C0F580AF467C9816040E /* MessageCompositionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E8983752C14B658A4DE206 /* MessageCompositionViewController.swift */; };
+		E549CF506FA54DC2B2D6CB10 /* MessageCompositionWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8341E14BC8E447BCA9E55586 /* MessageCompositionWindowController.swift */; };
+		6CA4A98858C9494DABA8100B /* MessageSendUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDC94EEDDA25416683810BCF /* MessageSendUseCase.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1755,6 +1758,9 @@
 		AAFCFFBC1074BFCA0018C7DA /* AccountSetupController.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = AccountSetupController.m; sourceTree = "<group>"; tabWidth = 4; };
 		D3F1C0A22B816BDE00A1A1AA /* AKSIPMessenger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AKSIPMessenger.h; sourceTree = "<group>"; };
 		D3F1C0A32B816BDE00A1A1AA /* AKSIPMessenger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AKSIPMessenger.m; sourceTree = "<group>"; };
+		D4E8983752C14B658A4DE206 /* MessageCompositionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCompositionViewController.swift; sourceTree = "<group>"; };
+		8341E14BC8E447BCA9E55586 /* MessageCompositionWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCompositionWindowController.swift; sourceTree = "<group>"; };
+		CDC94EEDDA25416683810BCF /* MessageSendUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageSendUseCase.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1926,6 +1932,8 @@
 				8A68C95D1FFE9BBD005125AF /* WebBrowser.swift */,
 				8A1DA8121DF07EA700F5BA40 /* WorkspaceSleepStatus.swift */,
 				8A1DA8141DF07EEE00F5BA40 /* WorkspaceSleepStatusTests.swift */,
+				D4E8983752C14B658A4DE206 /* MessageCompositionViewController.swift */,
+				8341E14BC8E447BCA9E55586 /* MessageCompositionWindowController.swift */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				AA4D490A1BB99DD6004D1D4B /* Frameworks */,
@@ -2885,6 +2893,7 @@
 				8AB677F21F0BFBFB001A47A2 /* ContactCallHistoryRecordGetUseCase.swift */,
 				8AB677F41F0BFC12001A47A2 /* ContactCallHistoryRecordGetUseCaseTests.swift */,
 				8AF188A21F0FC144003CAE8C /* ContactCallHistoryRecordGetUseCaseOutput */,
+				CDC94EEDDA25416683810BCF /* MessageSendUseCase.swift */,
 			);
 			name = "Call History";
 			sourceTree = "<group>";
@@ -4189,6 +4198,8 @@
 				AA3FABB01BBC1CCE0064B2C3 /* TelephoneError.swift in Sources */,
 				8A92B7BC1E784D0000922B1E /* DefaultCallHistoryRecordRemoveUseCaseFactory.swift in Sources */,
 				D3F1C0A12B816BDE00A1A1AA /* AKSIPMessenger.m in Sources */,
+				A836C0F580AF467C9816040E /* MessageCompositionViewController.swift in Sources */,
+				E549CF506FA54DC2B2D6CB10 /* MessageCompositionWindowController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

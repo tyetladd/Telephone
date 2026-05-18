@@ -63,6 +63,8 @@ extern const NSInteger kAKSIPAccountRegistrationExpireTimeNotSpecified;
 
 @property(nonatomic, readonly, copy) NSString *domain;
 
+@property(nonatomic, readonly, copy) NSString *uuid;
+
 // SIP proxy host.
 @property(nonatomic, readonly) NSString *proxyHost;
 

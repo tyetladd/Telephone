@@ -198,8 +198,15 @@ static NSString * const kRussian = @"ru";
     _accountDescription = [accountDescription copy];
     _destinationToCall = @"";
 
+    ActiveAccountViewController *activeAccountVC = [[ActiveAccountViewController alloc] initWithAccountController:self];
+    activeAccountVC.messageSendBlock = ^(NSString *destination) {
+        [[NSNotificationCenter defaultCenter]
+            postNotificationName:@"TelephoneDidRequestMessageComposition"
+                          object:self
+                        userInfo:@{@"destination": destination ?: @""}];
+    };
     _accountViewController
-    = [[AccountViewController alloc] initWithActiveAccountViewController:[[ActiveAccountViewController alloc] initWithAccountController:self]
+    = [[AccountViewController alloc] initWithActiveAccountViewController:activeAccountVC
                                                callHistoryViewController:[[CallHistoryViewController alloc] init]
                                        callHistoryViewEventTargetFactory:callHistoryViewEventTargetFactory
                                                                  account:[[AccountControllerToAccountAdapter alloc] initWithController:self]];

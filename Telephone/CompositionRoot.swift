@@ -43,6 +43,7 @@ final class CompositionRoot: NSObject {
     private let callEventSource: AKSIPCallEventSource
     private let contactsChangeEventSource: Any
     private let dayChangeEventSource: NSCalendarDayChangeEventSource
+    private let callHistories: DefaultCallHistories
 
     @objc init(preferencesControllerDelegate: PreferencesControllerDelegate, nameServersChangeEventTarget: NameServersChangeEventTarget) {
         userAgent = AKSIPUserAgent.shared()
@@ -139,7 +140,7 @@ final class CompositionRoot: NSObject {
             target: userAgentSoundIOSelection, queue: background
         )
 
-        let callHistories = DefaultCallHistories(
+        self.callHistories = DefaultCallHistories(
             factory: NotifyingCallHistoryFactory(
             origin: ReversedCallHistoryFactory(
                 origin: PersistentCallHistoryFactory(
@@ -246,5 +247,61 @@ final class CompositionRoot: NSObject {
         accountControllers = AccountControllers()
 
         nameServers = NameServers(bundle: Bundle.main, target: nameServersChangeEventTarget)
+
+        super.init()
+
+        setupMessageObservers()
+    }
+
+    private func setupMessageObservers() {
+        // Observe incoming SIP messages to add to call history
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name.AKSIPUserAgentDidReceiveMessage,
+            object: userAgent,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self,
+                  let body = notification.userInfo?["body"] as? String,
+                  let from = notification.userInfo?["from"] as? String else { return }
+            guard let controller = self.accountControllers.enabled.first else { return }
+            let record = CallHistoryRecord(
+                uri: URI(user: from, host: "", displayName: ""),
+                date: Date(),
+                isIncoming: true,
+                text: body
+            )
+            let history = callHistories.history(withUUID: controller.account.uuid)
+            CallHistoryRecordAddUseCase(history: history, record: record, domain: controller.account.domain).add(record)
+        }
+
+        // Observe message composition requests from ObjC side
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("TelephoneDidRequestMessageComposition"),
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self,
+                  let destination = notification.userInfo?["destination"] as? String,
+                  !destination.isEmpty else { return }
+            let messageVC = MessageCompositionViewController()
+            messageVC.destination = destination
+            messageVC.onSend = { [weak self] text in
+                guard let self,
+                      let controller = self.accountControllers.enabled.first else { return }
+                let accId = Int32(controller.account.identifier)
+                let status = self.userAgent.messenger.sendMessage(text, to: destination, accountId: accId)
+                guard status == 0 else { return }
+                let record = CallHistoryRecord(
+                    uri: URI(user: destination, host: "", displayName: ""),
+                    date: Date(),
+                    isIncoming: false,
+                    text: text
+                )
+                let history = callHistories.history(withUUID: controller.account.uuid)
+                CallHistoryRecordAddUseCase(history: history, record: record, domain: controller.account.domain).add(record)
+            }
+            let wc = MessageCompositionWindowController(viewController: messageVC)
+            wc.showWindow(nil)
+        }
     }
 }
