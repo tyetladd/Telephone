@@ -18,6 +18,11 @@
 
 import Foundation
 
+public enum HistoryRecordKind: String, Codable {
+    case call
+    case message
+}
+
 public struct CallHistoryRecord {
     public let identifier: String
     public let uri: URI
@@ -25,6 +30,8 @@ public struct CallHistoryRecord {
     public let duration: Int
     public let isIncoming: Bool
     public let isMissed: Bool
+    public let kind: HistoryRecordKind
+    public let text: String?
 
     public init(uri: URI, date: Date, duration: Int, isIncoming: Bool, isMissed: Bool) {
         identifier = "\(uri.user)@\(uri.host)|\(date.timeIntervalSinceReferenceDate)|\(duration)|\(isIncoming ? 1 : 0)"
@@ -33,6 +40,19 @@ public struct CallHistoryRecord {
         self.duration = duration
         self.isIncoming = isIncoming
         self.isMissed = isMissed
+        self.kind = .call
+        self.text = nil
+    }
+
+    public init(uri: URI, date: Date, isIncoming: Bool, text: String) {
+        identifier = "\(uri.user)@\(uri.host)|\(date.timeIntervalSinceReferenceDate)|\(text.hashValue)"
+        self.uri = uri
+        self.date = date
+        self.duration = 0
+        self.isIncoming = isIncoming
+        self.isMissed = false
+        self.kind = .message
+        self.text = text
     }
 
     public func removingHost() -> CallHistoryRecord {
@@ -49,11 +69,13 @@ public struct CallHistoryRecord {
 extension CallHistoryRecord: Equatable {
     public static func ==(lhs: CallHistoryRecord, rhs: CallHistoryRecord) -> Bool {
         return
+            lhs.identifier == rhs.identifier &&
             lhs.uri == rhs.uri &&
             lhs.date == rhs.date &&
             lhs.duration == rhs.duration &&
             lhs.isIncoming == rhs.isIncoming &&
-            lhs.isMissed == rhs.isMissed
+            lhs.isMissed == rhs.isMissed &&
+            lhs.kind == rhs.kind
     }
 }
 
