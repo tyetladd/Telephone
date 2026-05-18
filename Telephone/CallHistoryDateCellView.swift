@@ -49,7 +49,6 @@ final class CallHistoryDateCellView: NSTableCellView {
 
 private extension CallHistoryDateCellView {
     func configureForMessage(_ record: PresentationCallHistoryRecord) {
-        durationField.stringValue = record.cellText
         setIcon(symbolName: record.isIncoming ? "bubble.left" : "bubble.left.fill",
                 tint: record.isIncoming ? .secondaryLabelColor : .labelColor)
     }

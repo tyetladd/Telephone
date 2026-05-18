@@ -23,17 +23,22 @@ final class PresentationCallHistoryRecord: NSObject {
     let identifier: String
     @objc let contact: PresentationContact
     @objc let date: String
-    @objc let duration: String
     @objc let isIncoming: Bool
     @objc let isMissed: Bool
     let kind: HistoryRecordKind
     @objc let text: String?
 
+    private let callDuration: String
+
+    @objc var duration: String {
+        return kind == .message ? (text ?? "") : callDuration
+    }
+
     init(identifier: String, contact: PresentationContact, date: String, duration: String, isIncoming: Bool, isMissed: Bool, kind: HistoryRecordKind, text: String?) {
         self.identifier = identifier
         self.contact = contact
         self.date = date
-        self.duration = duration
+        self.callDuration = duration
         self.isIncoming = isIncoming
         self.isMissed = isMissed
         self.kind = kind
@@ -43,8 +48,6 @@ final class PresentationCallHistoryRecord: NSObject {
 
 extension PresentationCallHistoryRecord {
     @objc var isMessage: Bool { return kind == .message }
-
-    @objc var cellText: String { return text ?? duration }
 }
 
 extension PresentationCallHistoryRecord {
