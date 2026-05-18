@@ -52,19 +52,15 @@ final class CallHistoryViewController: NSViewController {
         target?.shouldReloadData()
     }
 
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        guard let column = tableColumn, row < records.count else { return nil }
-        if column == tableView.tableColumns.first {
-            let iconIdentifier = NSUserInterfaceItemIdentifier("IconCell")
-            let cellView = tableView.makeView(withIdentifier: iconIdentifier, owner: self) as? CallHistoryIconCellView
-                ?? CallHistoryIconCellView()
-            cellView.identifier = iconIdentifier
-            cellView.objectValue = records[row]
-            return cellView
+    func tableView(_ tableView: NSTableView, didAdd rowView: NSTableRowView, forRow row: Int) {
+        guard row < records.count else { return }
+        let record = records[row]
+        guard let cellView = rowView.view(atColumn: 0) as? NSTableCellView,
+              let imageView = cellView.imageView else { return }
+        if !(cellView is CallHistoryIconCellView) {
+            object_setClass(cellView, CallHistoryIconCellView.self)
         }
-        let cellView = tableView.makeView(withIdentifier: column.identifier, owner: self) as? NSTableCellView
-        cellView?.objectValue = records[row]
-        return cellView
+        cellView.objectValue = record
     }
 
     override func keyDown(with event: NSEvent) {
