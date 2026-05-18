@@ -55,8 +55,7 @@ final class CallHistoryViewController: NSViewController {
     func tableView(_ tableView: NSTableView, didAdd rowView: NSTableRowView, forRow row: Int) {
         guard row < records.count else { return }
         let record = records[row]
-        guard let iconColumn = tableView.tableColumns.first,
-              let cellView = rowView.view(atColumn: tableView.column(withIdentifier: iconColumn.identifier)) as? NSTableCellView else { return }
+        guard let cellView = rowView.view(atColumn: 0) as? NSTableCellView else { return }
         cellView.unbind(.hidden)
         cellView.isHidden = false
         guard let imageView = cellView.imageView else { return }

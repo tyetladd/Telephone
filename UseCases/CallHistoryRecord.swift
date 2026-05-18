@@ -57,8 +57,12 @@ public struct CallHistoryRecord {
     }
 
     public func removingHost() -> CallHistoryRecord {
+        let newURI = URI(user: uri.user, host: "", displayName: uri.displayName)
+        if kind == .message, let text = text {
+            return CallHistoryRecord(uri: newURI, date: date, isIncoming: isIncoming, text: text)
+        }
         return CallHistoryRecord(
-            uri: URI(user: uri.user, host: "", displayName: uri.displayName),
+            uri: newURI,
             date: date,
             duration: duration,
             isIncoming: isIncoming,
