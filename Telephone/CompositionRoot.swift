@@ -273,6 +273,9 @@ final class CompositionRoot: NSObject {
             )
             let history = callHistories.history(withUUID: controller.account.uuid)
             CallHistoryRecordAddUseCase(history: history, record: record, domain: controller.account.domain).add(record)
+            if let sound = NSSound(named: "Ping") {
+                sound.play()
+            }
         }
 
         // Observe message composition requests from ObjC side

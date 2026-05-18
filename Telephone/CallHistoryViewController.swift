@@ -59,19 +59,23 @@ final class CallHistoryViewController: NSViewController {
         let cellView = tableView.makeView(withIdentifier: identifier, owner: self) as? NSTableCellView
         cellView?.objectValue = record
         // Customize icon for first column
-        if column == tableView.tableColumns.first, let imageView = cellView?.imageView {
-            imageView.unbind(.hidden)
-            imageView.isHidden = false
-            if record.isMessage {
-                let name = record.isIncoming ? "bubble.left" : "bubble.left.fill"
-                imageView.image = NSImage(systemSymbolName: name, accessibilityDescription: nil)
-                imageView.contentTintColor = record.isIncoming ? .secondaryLabelColor : .labelColor
-            } else if record.isIncoming {
-                imageView.image = NSImage(systemSymbolName: "phone.arrow.down.left", accessibilityDescription: nil)
-                imageView.contentTintColor = record.isMissed ? .systemRed : .secondaryLabelColor
-            } else {
-                imageView.image = NSImage(systemSymbolName: "phone.arrow.up.right", accessibilityDescription: nil)
-                imageView.contentTintColor = .secondaryLabelColor
+        if column == tableView.tableColumns.first {
+            cellView?.unbind(.hidden)
+            cellView?.isHidden = false
+            if let imageView = cellView?.imageView {
+                imageView.unbind(.hidden)
+                imageView.isHidden = false
+                if record.isMessage {
+                    let name = record.isIncoming ? "bubble.left" : "bubble.left.fill"
+                    imageView.image = NSImage(systemSymbolName: name, accessibilityDescription: nil)
+                    imageView.contentTintColor = record.isIncoming ? .secondaryLabelColor : .labelColor
+                } else if record.isIncoming {
+                    imageView.image = NSImage(systemSymbolName: "phone.arrow.down.left", accessibilityDescription: nil)
+                    imageView.contentTintColor = record.isMissed ? .systemRed : .secondaryLabelColor
+                } else {
+                    imageView.image = NSImage(systemSymbolName: "phone.arrow.up.right", accessibilityDescription: nil)
+                    imageView.contentTintColor = .secondaryLabelColor
+                }
             }
         }
         return cellView
