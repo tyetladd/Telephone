@@ -34,4 +34,49 @@ final class CallHistoryDateCellView: NSTableCellView {
             }
         }
     }
+
+    override var objectValue: Any? {
+        didSet {
+            guard let record = objectValue as? PresentationCallHistoryRecord else { return }
+            if record.isMessage {
+                configureForMessage(record)
+            } else {
+                configureForCall(record)
+            }
+        }
+    }
+}
+
+private extension CallHistoryDateCellView {
+    func configureForMessage(_ record: PresentationCallHistoryRecord) {
+        durationField.stringValue = record.cellText
+        ensureImageView()
+        imageView?.image = NSImage(systemSymbolName: record.isIncoming ? "bubble.left" : "bubble.left.fill", accessibilityDescription: nil)
+        imageView?.contentTintColor = record.isIncoming ? .secondaryLabelColor : .labelColor
+    }
+
+    func configureForCall(_ record: PresentationCallHistoryRecord) {
+        ensureImageView()
+        if record.isIncoming {
+            imageView?.image = NSImage(systemSymbolName: "phone.arrow.down.left", accessibilityDescription: nil)
+            imageView?.contentTintColor = record.isMissed ? .systemRed : .secondaryLabelColor
+        } else {
+            imageView?.image = NSImage(systemSymbolName: "phone.arrow.up.right", accessibilityDescription: nil)
+            imageView?.contentTintColor = .secondaryLabelColor
+        }
+    }
+
+    func ensureImageView() {
+        guard imageView == nil else { return }
+        let view = NSImageView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(view)
+        NSLayoutConstraint.activate([
+            view.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 0),
+            view.centerYAnchor.constraint(equalTo: centerYAnchor),
+            view.widthAnchor.constraint(equalToConstant: 16),
+            view.heightAnchor.constraint(equalToConstant: 16)
+        ])
+        imageView = view
+    }
 }
