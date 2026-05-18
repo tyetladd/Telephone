@@ -30,3 +30,7 @@ extern NSString * const AKSIPUserAgentDidFinishStoppingNotification;
 // Posted when the user agent detects NAT type, which can be accessed via
 // the |detectedNATType| property.
 extern NSString * const AKSIPUserAgentDidDetectNATNotification;
+//
+// Posted when the user agent receives an incoming SIP MESSAGE (text).
+// userInfo keys: @"body" (NSString), @"from" (NSString)
+extern NSString * const AKSIPUserAgentDidReceiveMessageNotification;

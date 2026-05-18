@@ -1124,8 +1124,10 @@ static void AKSIPMessengerOnPager2Callback(pjsua_call_id call_id, const pj_str_t
 }
 
 - (void)handleIncomingMessage:(NSString *)body from:(NSString *)fromURI {
-    // Stub for now — will be wired in a later task via notification
-    NSLog(@"Incoming message from %@: %@", fromURI, body);
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:AKSIPUserAgentDidReceiveMessageNotification
+                      object:self
+                    userInfo:@{@"body": body ?: @"", @"from": fromURI ?: @""}];
 }
 
 @end
