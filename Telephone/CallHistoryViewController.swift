@@ -52,33 +52,27 @@ final class CallHistoryViewController: NSViewController {
         target?.shouldReloadData()
     }
 
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        guard let column = tableColumn, row < records.count else { return nil }
+    func tableView(_ tableView: NSTableView, didAdd rowView: NSTableRowView, forRow row: Int) {
+        guard row < records.count else { return }
         let record = records[row]
-        let identifier = column.identifier
-        let cellView = tableView.makeView(withIdentifier: identifier, owner: self) as? NSTableCellView
-        cellView?.objectValue = record
-        // Customize icon for first column
-        if column == tableView.tableColumns.first {
-            cellView?.unbind(.hidden)
-            cellView?.isHidden = false
-            if let imageView = cellView?.imageView {
-                imageView.unbind(.hidden)
-                imageView.isHidden = false
-                if record.isMessage {
-                    let name = record.isIncoming ? "bubble.left" : "bubble.left.fill"
-                    imageView.image = NSImage(systemSymbolName: name, accessibilityDescription: nil)
-                    imageView.contentTintColor = record.isIncoming ? .secondaryLabelColor : .labelColor
-                } else if record.isIncoming {
-                    imageView.image = NSImage(systemSymbolName: "phone.arrow.down.left", accessibilityDescription: nil)
-                    imageView.contentTintColor = record.isMissed ? .systemRed : .secondaryLabelColor
-                } else {
-                    imageView.image = NSImage(systemSymbolName: "phone.arrow.up.right", accessibilityDescription: nil)
-                    imageView.contentTintColor = .secondaryLabelColor
-                }
-            }
+        guard let iconColumn = tableView.tableColumns.first,
+              let cellView = rowView.view(atColumn: tableView.column(withIdentifier: iconColumn.identifier)) as? NSTableCellView else { return }
+        cellView.unbind(.hidden)
+        cellView.isHidden = false
+        guard let imageView = cellView.imageView else { return }
+        imageView.unbind(.hidden)
+        imageView.isHidden = false
+        if record.isMessage {
+            let name = record.isIncoming ? "bubble.left" : "bubble.left.fill"
+            imageView.image = NSImage(systemSymbolName: name, accessibilityDescription: nil)
+            imageView.contentTintColor = record.isIncoming ? .secondaryLabelColor : .labelColor
+        } else if record.isIncoming {
+            imageView.image = NSImage(systemSymbolName: "phone.arrow.down.left", accessibilityDescription: nil)
+            imageView.contentTintColor = record.isMissed ? .systemRed : .secondaryLabelColor
+        } else {
+            imageView.image = NSImage(systemSymbolName: "phone.arrow.up.right", accessibilityDescription: nil)
+            imageView.contentTintColor = .secondaryLabelColor
         }
-        return cellView
     }
 
     override func keyDown(with event: NSEvent) {
