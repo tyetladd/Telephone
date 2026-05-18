@@ -16,6 +16,7 @@
 //  GNU General Public License for more details.
 //
 
+import CommonCrypto
 import Foundation
 
 public enum HistoryRecordKind: String, Codable {
@@ -45,7 +46,7 @@ public struct CallHistoryRecord {
     }
 
     public init(uri: URI, date: Date, isIncoming: Bool, text: String) {
-        identifier = "\(uri.user)@\(uri.host)|\(date.timeIntervalSinceReferenceDate)|\(text.hashValue)"
+        identifier = "\(uri.user)@\(uri.host)|\(date.timeIntervalSinceReferenceDate)|\(stableHash(text))"
         self.uri = uri
         self.date = date
         self.duration = 0
@@ -64,6 +65,13 @@ public struct CallHistoryRecord {
             isMissed: isMissed
         )
     }
+}
+
+private func stableHash(_ text: String) -> String {
+    guard let data = text.data(using: .utf8) else { return "0" }
+    var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+    data.withUnsafeBytes { _ = CC_SHA256($0.baseAddress, CC_LONG(data.count), &hash) }
+    return hash.prefix(8).map { String(format: "%02x", $0) }.joined()
 }
 
 extension CallHistoryRecord: Equatable {
