@@ -82,7 +82,7 @@ NSString * const kPhoneLabel = @"PhoneLabel";
                                               target:self
                                               action:@selector(makeCall:)];
     callButton.bezelStyle = NSBezelStyleRounded;
-    callButton.keyEquivalent = @"\r"; // Enter key
+    callButton.keyEquivalent = @"\r";
 
     // Add Send Text button
     NSButton *sendTextButton = [NSButton buttonWithTitle:NSLocalizedString(@"Send Text", @"Send text button")
@@ -90,7 +90,6 @@ NSString * const kPhoneLabel = @"PhoneLabel";
                                                   action:@selector(sendText:)];
     sendTextButton.bezelStyle = NSBezelStyleRounded;
 
-    // Position buttons to the right of the call destination field
     NSView *field = self.callDestinationField;
     NSView *superview = field.superview;
     [superview addSubview:callButton];
@@ -99,11 +98,20 @@ NSString * const kPhoneLabel = @"PhoneLabel";
     callButton.translatesAutoresizingMaskIntoConstraints = NO;
     sendTextButton.translatesAutoresizingMaskIntoConstraints = NO;
 
+    // Deactivate the field's existing trailing constraint so it can shrink
+    for (NSLayoutConstraint *c in superview.constraints) {
+        if ((c.firstItem == field && c.firstAttribute == NSLayoutAttributeTrailing) ||
+            (c.secondItem == field && c.secondAttribute == NSLayoutAttributeTrailing)) {
+            c.active = NO;
+        }
+    }
+
     [NSLayoutConstraint activateConstraints:@[
-        [callButton.leadingAnchor constraintEqualToAnchor:field.trailingAnchor constant:8],
+        [field.trailingAnchor constraintEqualToAnchor:callButton.leadingAnchor constant:-8],
         [callButton.centerYAnchor constraintEqualToAnchor:field.centerYAnchor],
-        [sendTextButton.leadingAnchor constraintEqualToAnchor:callButton.trailingAnchor constant:8],
+        [callButton.trailingAnchor constraintEqualToAnchor:sendTextButton.leadingAnchor constant:-8],
         [sendTextButton.centerYAnchor constraintEqualToAnchor:field.centerYAnchor],
+        [sendTextButton.trailingAnchor constraintEqualToAnchor:superview.trailingAnchor constant:-8],
     ]];
 }
 

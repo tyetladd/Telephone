@@ -50,33 +50,35 @@ final class CallHistoryDateCellView: NSTableCellView {
 private extension CallHistoryDateCellView {
     func configureForMessage(_ record: PresentationCallHistoryRecord) {
         durationField.stringValue = record.cellText
-        ensureImageView()
-        imageView?.image = NSImage(systemSymbolName: record.isIncoming ? "bubble.left" : "bubble.left.fill", accessibilityDescription: nil)
-        imageView?.contentTintColor = record.isIncoming ? .secondaryLabelColor : .labelColor
+        setIcon(symbolName: record.isIncoming ? "bubble.left" : "bubble.left.fill",
+                tint: record.isIncoming ? .secondaryLabelColor : .labelColor)
     }
 
     func configureForCall(_ record: PresentationCallHistoryRecord) {
-        ensureImageView()
         if record.isIncoming {
-            imageView?.image = NSImage(systemSymbolName: "phone.arrow.down.left", accessibilityDescription: nil)
-            imageView?.contentTintColor = record.isMissed ? .systemRed : .secondaryLabelColor
+            setIcon(symbolName: "phone.arrow.down.left",
+                    tint: record.isMissed ? .systemRed : .secondaryLabelColor)
         } else {
-            imageView?.image = NSImage(systemSymbolName: "phone.arrow.up.right", accessibilityDescription: nil)
-            imageView?.contentTintColor = .secondaryLabelColor
+            setIcon(symbolName: "phone.arrow.up.right",
+                    tint: .secondaryLabelColor)
         }
     }
 
-    func ensureImageView() {
-        guard imageView == nil else { return }
-        let view = NSImageView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(view)
-        NSLayoutConstraint.activate([
-            view.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 0),
-            view.centerYAnchor.constraint(equalTo: centerYAnchor),
-            view.widthAnchor.constraint(equalToConstant: 16),
-            view.heightAnchor.constraint(equalToConstant: 16)
-        ])
-        imageView = view
+    func setIcon(symbolName: String, tint: NSColor) {
+        if imageView == nil {
+            let iv = NSImageView()
+            iv.translatesAutoresizingMaskIntoConstraints = false
+            iv.imageScaling = .scaleProportionallyDown
+            addSubview(iv)
+            NSLayoutConstraint.activate([
+                iv.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4),
+                iv.centerYAnchor.constraint(equalTo: centerYAnchor),
+                iv.widthAnchor.constraint(equalToConstant: 16),
+                iv.heightAnchor.constraint(equalToConstant: 16)
+            ])
+            imageView = iv
+        }
+        imageView?.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)
+        imageView?.contentTintColor = tint
     }
 }
