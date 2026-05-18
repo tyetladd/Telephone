@@ -43,7 +43,38 @@ final class CallHistoryViewController: NSViewController {
     }
 
     override func viewDidLoad() {
+        super.viewDidLoad()
+        if let iconColumn = tableView.tableColumns.first {
+            iconColumn.width = 27
+            iconColumn.minWidth = 27
+            iconColumn.maxWidth = 27
+        }
         target?.shouldReloadData()
+    }
+
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        guard let column = tableColumn, row < records.count else { return nil }
+        let record = records[row]
+        let identifier = column.identifier
+        let cellView = tableView.makeView(withIdentifier: identifier, owner: self) as? NSTableCellView
+        cellView?.objectValue = record
+        // Customize icon for first column
+        if column == tableView.tableColumns.first, let imageView = cellView?.imageView {
+            imageView.unbind(.hidden)
+            imageView.isHidden = false
+            if record.isMessage {
+                let name = record.isIncoming ? "bubble.left" : "bubble.left.fill"
+                imageView.image = NSImage(systemSymbolName: name, accessibilityDescription: nil)
+                imageView.contentTintColor = record.isIncoming ? .secondaryLabelColor : .labelColor
+            } else if record.isIncoming {
+                imageView.image = NSImage(systemSymbolName: "phone.arrow.down.left", accessibilityDescription: nil)
+                imageView.contentTintColor = record.isMissed ? .systemRed : .secondaryLabelColor
+            } else {
+                imageView.image = NSImage(systemSymbolName: "phone.arrow.up.right", accessibilityDescription: nil)
+                imageView.contentTintColor = .secondaryLabelColor
+            }
+        }
+        return cellView
     }
 
     override func keyDown(with event: NSEvent) {
